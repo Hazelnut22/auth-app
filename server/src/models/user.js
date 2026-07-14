@@ -1,0 +1,49 @@
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true
+    },
+    password: {
+        type: String,
+        required: true,
+    },
+    isMfaActive: {
+        type: Boolean,
+        required: false,
+    },
+    mfaSecret: { 
+        type: String, 
+        default: null 
+    },
+    mfaBackupCodes: { 
+        type: [String], 
+        default: [] 
+    },
+    failedAttempts: { 
+        type: Number, 
+        default: 0 
+    },
+    lockedUntil: {
+        type: Date, 
+        default: null 
+    },
+    passwordChangedAt: { 
+        type: Date, 
+        default: Date.now 
+    },
+}, {
+    timestamps: true
+});
+
+const User = mongoose.model("User", userSchema);
+
+export default User;
