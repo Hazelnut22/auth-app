@@ -23,11 +23,12 @@ export default function Register({ navigate }) {
   const [email,         setEmail]         = useState("");
   const [password,      setPassword]      = useState("");
   const [confirm,       setConfirm]       = useState("");
-  const [captchaToken,  setCaptchaToken]  = useState(null);
+  const [captcha,       setCaptcha]       = useState({ token: "", answer: "" });
+  const [captchaError,  setCaptchaError]  = useState("");
   const [confirmError,  setConfirmError]  = useState("");
-
+ 
   const strength = usePasswordStrength(password);
-
+ 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (password !== confirm) {
@@ -35,17 +36,26 @@ export default function Register({ navigate }) {
       return;
     }
     setConfirmError("");
-    // TODO: call POST /auth/register with { name, email, password, captchaToken }
+    if (!captcha.token || !captcha.answer) {
+      setCaptchaError("Please complete the CAPTCHA.");
+      return;
+    }
+    setCaptchaError("");
+    // TODO: call POST /auth/register with {
+    //   name, email, password,
+    //   captchaToken: captcha.token,
+    //   captchaAnswer: captcha.answer
+    // }
     navigate("mfa");
   };
-
+ 
   const footer = (
     <>
       Already have an account?{" "}
       <LinkButton onClick={() => navigate("login")}>Sign in</LinkButton>
     </>
   );
-
+ 
   return (
     <AuthCard
       heading="Create account"
@@ -78,7 +88,7 @@ export default function Register({ navigate }) {
             }}
           />
         </FormField>
-
+ 
         <FormField id="reg-email" label="Email address">
           <input
             id="reg-email"
@@ -104,7 +114,7 @@ export default function Register({ navigate }) {
             }}
           />
         </FormField>
-
+ 
         <FormField id="reg-password" label="Password">
           <PasswordInput
             id="reg-password"
@@ -116,7 +126,7 @@ export default function Register({ navigate }) {
           />
           <StrengthBar password={password} strength={strength} />
         </FormField>
-
+ 
         <FormField
           id="reg-confirm"
           label="Confirm password"
@@ -135,9 +145,13 @@ export default function Register({ navigate }) {
             required
           />
         </FormField>
-
-        <CaptchaWidget onVerify={setCaptchaToken} />
-
+ 
+        <CaptchaWidget
+          onVerify={setCaptcha}
+          onExpire={() => setCaptchaError("CAPTCHA expired. A new one has been loaded.")}
+          error={captchaError}
+        />
+ 
         <Button type="submit">
           Create account
         </Button>
@@ -145,3 +159,4 @@ export default function Register({ navigate }) {
     </AuthCard>
   );
 }
+ 

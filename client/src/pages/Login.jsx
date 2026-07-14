@@ -17,14 +17,24 @@ const { color, font } = tokens;
  *   navigate  {(screen: string) => void}  — provided by App router
  */
 export default function Login({ navigate }) {
-  const [email,          setEmail]          = useState("");
-  const [password,       setPassword]       = useState("");
-  const [captchaToken,   setCaptchaToken]   = useState(null);
-  const [rememberMe,     setRememberMe]     = useState(false);
+  const [email,         setEmail]         = useState("");
+  const [password,      setPassword]      = useState("");
+  const [captcha,       setCaptcha]       = useState({ token: "", answer: "" });
+  const [captchaError,  setCaptchaError]  = useState("");
+  const [rememberMe,    setRememberMe]    = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: call POST /auth/login with { email, password, captchaToken }
+    if (!captcha.token || !captcha.answer) {
+      setCaptchaError("Please complete the CAPTCHA.");
+      return;
+    }
+    setCaptchaError("");
+    // TODO: call POST /auth/login with {
+    //   email, password,
+    //   captchaToken: captcha.token,
+    //   captchaAnswer: captcha.answer
+    // }
     navigate("mfa");
   };
 
@@ -118,7 +128,11 @@ export default function Login({ navigate }) {
           </LinkButton>
         </div>
 
-        <CaptchaWidget onVerify={setCaptchaToken} />
+        <CaptchaWidget
+          onVerify={setCaptcha}
+          onExpire={() => setCaptchaError("CAPTCHA expired. A new one has been loaded.")}
+          error={captchaError}
+        />
 
         <Button type="submit">
           Sign in
