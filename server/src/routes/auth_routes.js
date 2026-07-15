@@ -3,7 +3,7 @@ import { body } from "express-validator";
 import { validate } from "../middleware/validator.js";
 import { authGuard } from "../middleware/auth_guard.js";
 import { registerLimiter, loginLimiter, globalLimiter } from "../middleware/rate_limiter.js";
-import { register, getCaptcha, login, status, logout, setup2fa, verify2fa, reset2fa } from "../controllers/auth_controllers.js";
+import { register, getCaptcha, login, status, logout, setup2fa, verify2fa, reset2fa, refresh } from "../controllers/auth_controllers.js";
 
 const router = Router();
 
@@ -56,6 +56,9 @@ router.post(
 
 // captcha
 router.get("/captcha", globalLimiter, getCaptcha);
+
+// refresh
+router.get("/refresh", refresh);
 
 // auth status
 router.get("/status", authGuard, status);

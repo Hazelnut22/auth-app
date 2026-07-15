@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import PasswordHistory from "../models/password_history.js";
 import { isPasswordValid } from "../utils/password_requirements.js";
-import { generateCaptcha } from "./captcha_controller.js";
+import { generateCaptcha, verifyCaptchaToken } from "./captcha_controller.js";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 
@@ -10,7 +10,12 @@ const LOCKOUT_MINUTES = Number(process.env.LOCKOUT_MINUTES) || 15;
 
 export const register = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, captchaToken, captchaAnswer } = req.body;
+
+        const captchaResult = verifyCaptchaToken(captchaToken, captchaAnswer);
+        if (!captchaResult.valid) {
+            return res.status(403).json({ error: captchaResult.reason });
+        }
 
         // Check if the password meets the requirments
         if (!isPasswordValid(password)) {
@@ -29,7 +34,7 @@ export const register = async (req, res) => {
 
         // Hash passwords with argon2
         const hashedPassword = await argon2.hash(password, {
-            type: argon2.argon2d,
+            type: argon2.argon2id,
             memoryCost: 19456, // 19 MB
             timeCost: 2,
             parallelism: 1,
@@ -63,18 +68,23 @@ export const register = async (req, res) => {
 };
 
 export const getCaptcha = async (req, res) => {
-  try {
-    const { token, imageDataUri } = generateCaptcha();
-    res.json({ token, imageDataUri });
-  } catch (err) {
-    console.error("[Captcha] Generation failed:", err.message);
-    res.status(500).json({ message: "Could not generate CAPTCHA. Please try again." });
-  }
+    try {
+        const { token, imageDataUri } = generateCaptcha();
+        res.json({ token, imageDataUri });
+    } catch (err) {
+        console.error("[Captcha] Generation failed:", err.message);
+        res.status(500).json({ message: "Could not generate CAPTCHA. Please try again." });
+    }
 };
 
 export const login = async (req, res) => {
     try {
         const { email, password, captchaToken, captchaAnswer } = req.body;
+
+        const captchaResult = verifyCaptchaToken(captchaToken, captchaAnswer);
+        if (!captchaResult.valid) {
+            return res.status(403).json({ error: captchaResult.reason });
+        }
 
         const user = await User.findOne(
             { email: email.toLowerCase().trim() }
@@ -86,7 +96,7 @@ export const login = async (req, res) => {
         }
 
         const dummyHash = await argon2.hash("dummy-timing-prevention", {
-            type: argon2.argon2d,
+            type: argon2.argon2id,
             memoryCost: 19456,
             timeCost: 2,
             parallelism: 1,
@@ -139,11 +149,24 @@ export const login = async (req, res) => {
             { expiresIn: "15m" }
         );
 
+        const refreshToken = jwt.sign(
+            { sub: user._id.toString(), purpose: "refresh" },
+            process.env.JWT_REFRESH_SECRET,   // different secret
+            { expiresIn: "7d" }
+        );
+
         res.cookie("access_token", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "Strict",
-            maxAge: 15 * 60 * 1000, // 15 minutes
+            maxAge: 15 * 60 * 1000,         // 15 minutes
+        });
+
+        res.cookie("refresh_token", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "Strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
         return res.status(200).json({
@@ -154,6 +177,54 @@ export const login = async (req, res) => {
     } catch (e) {
         console.error("Login error:", e);
         return res.status(500).json({ error: "Login failed. Please try again." });
+    }
+};
+
+export const refresh = async (req, res) => {
+    try {
+        const token = req.cookies?.refresh_token;
+
+        if (!token) {
+            return res.status(401).json({ error: "No refresh token." });
+        }
+
+        // Verify the refresh token
+        let payload;
+        try {
+            payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+        } catch {
+            // Expired or tampered — force re-login
+            res.clearCookie("refresh_token", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "Strict",
+            });
+            return res.status(401).json({ error: "Session expired. Please log in again." });
+        }
+
+        if (payload.purpose !== "refresh") {
+            return res.status(401).json({ error: "Invalid token." });
+        }
+
+        // Issue a new short-lived access token
+        const newAccessToken = jwt.sign(
+            { sub: payload.sub, purpose: "access" },
+            process.env.JWT_SECRET,
+            { expiresIn: "15m" }
+        );
+
+        res.cookie("access_token", newAccessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "Strict",
+            maxAge: 15 * 60 * 1000,
+        });
+
+        return res.status(200).json({ message: "Token refreshed." });
+
+    } catch (e) {
+        console.error("Refresh error:", e);
+        return res.status(500).json({ error: "Could not refresh session." });
     }
 };
 
