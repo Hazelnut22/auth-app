@@ -1,8 +1,8 @@
 import express, { json, urlencoded } from "express";
 import session from "express-session";
-import passport from "passport";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import dbConnect from "./config/db_connect.js";
 import authRoutes from "./routes/auth_routes.js";
 import { globalLimiter } from "./middleware/rate_limiter.js";
@@ -15,14 +15,14 @@ const app = express();
 
 // Middleware
 const corsOptions = {
-    origin: ["http://localhost:3001"],
+    origin: [process.env.FRONTEND_ORIGIN || "http://localhost:5173"],
     credentials: true
 }
 app.use(cors(corsOptions));
 app.use(globalLimiter);
 
-app.use(json({limit: "100mb"}));
-app.use(urlencoded({limit: "100mb", extended: true}));
+app.use(json({limit: "10kb"}));
+app.use(urlencoded({limit: "10kb", extended: true}));
 app.use(session({
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
@@ -31,10 +31,13 @@ app.use(session({
         maxAge: 60000 * 6
     }
 }));
-app.use(passport.initialize());
-app.use(passport.session());
 
+app.use(cookieParser());
 app.use("/app/auth", authRoutes);
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Not found." });
+});
 
 // port
 const PORT = process.env.PORT || 7002;

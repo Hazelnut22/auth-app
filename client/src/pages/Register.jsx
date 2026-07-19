@@ -1,13 +1,15 @@
 import { useState } from "react";
-import AuthCard             from "../components/ui/AuthCard";
-import FormField            from "../components/ui/FormField";
-import PasswordInput        from "../components/ui/PasswordInput";
-import StrengthBar          from "../components/ui/StrengthBar";
-import Button               from "../components/ui/Button";
-import CaptchaWidget        from "../components/ui/CaptchaWidget";
-import LinkButton           from "../components/ui/LinkButton";
+import AuthCard from "../components/ui/AuthCard";
+import FormField from "../components/ui/FormField";
+import PasswordInput from "../components/ui/PasswordInput";
+import StrengthBar from "../components/ui/StrengthBar";
+import Button from "../components/ui/Button";
+import CaptchaWidget from "../components/ui/CaptchaWidget";
+import LinkButton from "../components/ui/LinkButton";
+import Alert from "../components/ui/Alert.jsx";
 import { usePasswordStrength } from "../hooks/user_password_strength.js";
-import tokens               from "../styles/tokens";
+import tokens from "../styles/tokens";
+import api from "../api/axios.js";
 
 const { color, font } = tokens;
 
@@ -19,43 +21,61 @@ const { color, font } = tokens;
  *   navigate  {(screen: string) => void}
  */
 export default function Register({ navigate }) {
-  const [name,          setName]          = useState("");
-  const [email,         setEmail]         = useState("");
-  const [password,      setPassword]      = useState("");
-  const [confirm,       setConfirm]       = useState("");
-  const [captcha,       setCaptcha]       = useState({ token: "", answer: "" });
-  const [captchaError,  setCaptchaError]  = useState("");
-  const [confirmError,  setConfirmError]  = useState("");
- 
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [captcha, setCaptcha] = useState({ token: "", answer: "" });
+  const [captchaError, setCaptchaError] = useState("");
+  const [confirmError, setConfirmError] = useState("");
+  const [serverError, setServerError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const strength = usePasswordStrength(password);
- 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (password !== confirm) {
       setConfirmError("Passwords do not match.");
       return;
     }
-    setConfirmError("");
     if (!captcha.token || !captcha.answer) {
       setCaptchaError("Please complete the CAPTCHA.");
       return;
     }
-    setCaptchaError("");
-    // TODO: call POST /auth/register with {
-    //   name, email, password,
-    //   captchaToken: captcha.token,
-    //   captchaAnswer: captcha.answer
-    // }
-    navigate("mfa");
+
+    setLoading(true);
+    setServerError("");
+
+    try {
+      await api.post("/app/auth/register", {
+        username: name,
+        email,
+        password,
+        captchaToken: captcha.token,
+        captchaAnswer: captcha.answer,
+      });
+
+      // Go to email verification — pass email so the OTP screen knows who to verify
+      navigate("verify-email", { email });
+
+    } catch (err) {
+      setServerError(
+        err.response?.data?.error ?? "Registration failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
- 
+
   const footer = (
     <>
       Already have an account?{" "}
       <LinkButton onClick={() => navigate("login")}>Sign in</LinkButton>
     </>
   );
- 
+
   return (
     <AuthCard
       heading="Create account"
@@ -80,15 +100,15 @@ export default function Register({ navigate }) {
             }}
             onFocus={(e) => {
               e.target.style.borderColor = color.borderFocus;
-              e.target.style.boxShadow   = "0 0 0 3px rgba(201,121,58,0.12)";
+              e.target.style.boxShadow = "0 0 0 3px rgba(201,121,58,0.12)";
             }}
             onBlur={(e) => {
               e.target.style.borderColor = color.border;
-              e.target.style.boxShadow   = "none";
+              e.target.style.boxShadow = "none";
             }}
           />
         </FormField>
- 
+
         <FormField id="reg-email" label="Email address">
           <input
             id="reg-email"
@@ -106,15 +126,15 @@ export default function Register({ navigate }) {
             }}
             onFocus={(e) => {
               e.target.style.borderColor = color.borderFocus;
-              e.target.style.boxShadow   = "0 0 0 3px rgba(201,121,58,0.12)";
+              e.target.style.boxShadow = "0 0 0 3px rgba(201,121,58,0.12)";
             }}
             onBlur={(e) => {
               e.target.style.borderColor = color.border;
-              e.target.style.boxShadow   = "none";
+              e.target.style.boxShadow = "none";
             }}
           />
         </FormField>
- 
+
         <FormField id="reg-password" label="Password">
           <PasswordInput
             id="reg-password"
@@ -126,7 +146,7 @@ export default function Register({ navigate }) {
           />
           <StrengthBar password={password} strength={strength} />
         </FormField>
- 
+
         <FormField
           id="reg-confirm"
           label="Confirm password"
@@ -145,13 +165,19 @@ export default function Register({ navigate }) {
             required
           />
         </FormField>
- 
+
         <CaptchaWidget
           onVerify={setCaptcha}
           onExpire={() => setCaptchaError("CAPTCHA expired. A new one has been loaded.")}
           error={captchaError}
         />
- 
+
+        {serverError && (
+          <Alert variant="error" style={{ marginBottom: "12px" }}>
+            {serverError}
+          </Alert>
+        )}
+
         <Button type="submit">
           Create account
         </Button>
@@ -159,4 +185,3 @@ export default function Register({ navigate }) {
     </AuthCard>
   );
 }
- 

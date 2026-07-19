@@ -3,91 +3,91 @@ import tokens from "../../styles/tokens";
 
 const { color, font, radius } = tokens;
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:7001";
 
 const styles = {
   wrapper: {
     marginBottom: "18px",
   },
   label: {
-    display:      "block",
-    fontSize:     font.sizeMd,
-    fontWeight:   font.weightMedium,
-    color:        color.textSecondary,
+    display: "block",
+    fontSize: font.sizeMd,
+    fontWeight: font.weightMedium,
+    color: color.textSecondary,
     marginBottom: "6px",
-    letterSpacing:"0.1px",
+    letterSpacing: "0.1px",
   },
   imageRow: {
-    display:       "flex",
-    alignItems:    "center",
-    gap:           "10px",
-    marginBottom:  "8px",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "8px",
   },
   image: {
-    border:       `1.5px solid ${color.border}`,
+    border: `1.5px solid ${color.border}`,
     borderRadius: radius.md,
-    display:      "block",
-    height:       "70px",
-    userSelect:   "none",
-    pointerEvents:"none",      // prevent right-click save
-    background:   color.bgAccentLight,
+    display: "block",
+    height: "70px",
+    userSelect: "none",
+    pointerEvents: "none",      // prevent right-click save
+    background: color.bgAccentLight,
   },
   refreshBtn: {
-    background:   "none",
-    border:       `1.5px solid ${color.border}`,
+    background: "none",
+    border: `1.5px solid ${color.border}`,
     borderRadius: radius.md,
-    cursor:       "pointer",
-    color:        color.textMuted,
-    padding:      "6px 8px",
-    display:      "flex",
-    alignItems:   "center",
-    justifyContent:"center",
-    transition:   "border-color 0.15s, color 0.15s",
-    flexShrink:   0,
-    height:       "36px",
-    width:        "36px",
+    cursor: "pointer",
+    color: color.textMuted,
+    padding: "6px 8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "border-color 0.15s, color 0.15s",
+    flexShrink: 0,
+    height: "36px",
+    width: "36px",
   },
   input: {
-    width:        "100%",
-    height:       "42px",
-    padding:      "0 13px",
-    border:       `1.5px solid ${color.border}`,
+    width: "100%",
+    height: "42px",
+    padding: "0 13px",
+    border: `1.5px solid ${color.border}`,
     borderRadius: radius.md,
-    fontSize:     font.sizeLg,
-    color:        color.textPrimary,
-    background:   "#fff",
-    outline:      "none",
-    letterSpacing:"3px",
-    fontWeight:   font.weightSemibold,
-    textTransform:"uppercase",
-    transition:   "border-color 0.15s, box-shadow 0.15s",
-    fontFamily:   font.family,
+    fontSize: font.sizeLg,
+    color: color.textPrimary,
+    background: "#fff",
+    outline: "none",
+    letterSpacing: "3px",
+    fontWeight: font.weightSemibold,
+    textTransform: "uppercase",
+    transition: "border-color 0.15s, box-shadow 0.15s",
+    fontFamily: font.family,
   },
   inputError: {
     borderColor: color.error,
-    boxShadow:   "0 0 0 3px rgba(192,68,10,0.10)",
+    boxShadow: "0 0 0 3px rgba(192,68,10,0.10)",
   },
   hint: {
-    fontSize:  font.sizeSm,
-    color:     color.textMuted,
+    fontSize: font.sizeSm,
+    color: color.textMuted,
     marginTop: "5px",
   },
   error: {
-    fontSize:  font.sizeSm,
-    color:     color.error,
+    fontSize: font.sizeSm,
+    color: color.error,
     marginTop: "5px",
   },
   loadingBox: {
-    border:        `1.5px solid ${color.border}`,
-    borderRadius:  radius.md,
-    height:        "70px",
-    width:         "220px",
-    display:       "flex",
-    alignItems:    "center",
-    justifyContent:"center",
-    background:    color.bgAccentLight,
-    fontSize:      font.sizeSm,
-    color:         color.textMuted,
+    border: `1.5px solid ${color.border}`,
+    borderRadius: radius.md,
+    height: "70px",
+    width: "220px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: color.bgAccentLight,
+    fontSize: font.sizeSm,
+    color: color.textMuted,
   },
 };
 
@@ -131,11 +131,11 @@ function RefreshIcon({ spinning }) {
  */
 export default function CaptchaWidget({ onVerify, onExpire, error }) {
   const [imageDataUri, setImageDataUri] = useState(null);
-  const [token,        setToken]        = useState("");
-  const [answer,       setAnswer]       = useState("");
-  const [loading,      setLoading]      = useState(false);
-  const [fetchError,   setFetchError]   = useState("");
-  const [spinning,     setSpinning]     = useState(false);
+  const [token, setToken] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
+  const [spinning, setSpinning] = useState(false);
 
   // Fetch a fresh CAPTCHA challenge from the backend
   const fetchCaptcha = useCallback(async () => {
@@ -146,7 +146,9 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
     onVerify?.({ token: "", answer: "" }); // clear parent state while refreshing
 
     try {
-      const res  = await fetch(`${API_URL}/auth/captcha`);
+      const res = await fetch(`${API_URL}/app/auth/captcha`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to load CAPTCHA.");
       const data = await res.json();
       setImageDataUri(data.imageDataUri);
@@ -209,11 +211,11 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
           title="Get a new CAPTCHA"
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = color.accent;
-            e.currentTarget.style.color       = color.accent;
+            e.currentTarget.style.color = color.accent;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = color.border;
-            e.currentTarget.style.color       = color.textMuted;
+            e.currentTarget.style.color = color.textMuted;
           }}
         >
           <RefreshIcon spinning={spinning} />
@@ -239,12 +241,12 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
         onFocus={(e) => {
           if (!error && !fetchError) {
             e.target.style.borderColor = color.borderFocus;
-            e.target.style.boxShadow   = "0 0 0 3px rgba(201,121,58,0.12)";
+            e.target.style.boxShadow = "0 0 0 3px rgba(201,121,58,0.12)";
           }
         }}
         onBlur={(e) => {
           e.target.style.borderColor = (error || fetchError) ? color.error : color.border;
-          e.target.style.boxShadow   = "none";
+          e.target.style.boxShadow = "none";
         }}
       />
 

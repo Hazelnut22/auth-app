@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { body } from "express-validator";
 import { validate } from "../middleware/validator.js";
-import { authGuard } from "../middleware/auth_guard.js";
+import { authGuard, mfaPendingGuard } from "../middleware/auth_guard.js";
 import { registerLimiter, loginLimiter, globalLimiter } from "../middleware/rate_limiter.js";
-import { register, getCaptcha, login, status, logout, setup2fa, verify2fa, reset2fa, refresh } from "../controllers/auth_controllers.js";
+import { register, getCaptcha, login, status, verifyActivationOtp, sendActivationOtp, logout, setup2fa, verify2fa, reset2fa, refresh } from "../controllers/auth_controllers.js";
 
 const router = Router();
 
@@ -25,6 +25,12 @@ router.post(
         body("password")
             .isLength({ min: 8 }).withMessage("Password must be at least 8 characters.")
             .isLength({ max: 128 }).withMessage("Password too long."),
+
+        body("captchaToken")
+            .notEmpty().withMessage("CAPTCHA token is required."),
+
+        body("captchaAnswer")
+            .notEmpty().withMessage("CAPTCHA answer is required."),
     ],
     validate,
     register
@@ -57,8 +63,25 @@ router.post(
 // captcha
 router.get("/captcha", globalLimiter, getCaptcha);
 
+// activate user
+router.post("/activate",
+    [
+        body("email").trim().isEmail().normalizeEmail(),
+        body("otp").notEmpty().isLength({ min: 6, max: 6 }).withMessage("Enter the 6-digit code."),
+    ],
+    validate,
+    verifyActivationOtp
+);
+
+// activate email
+router.post("/activate/resend",
+    [body("email").trim().isEmail().normalizeEmail()],
+    validate,
+    sendActivationOtp
+);
+
 // refresh
-router.get("/refresh", refresh);
+router.post("/refresh", refresh);
 
 // auth status
 router.get("/status", authGuard, status);
@@ -67,12 +90,12 @@ router.get("/status", authGuard, status);
 router.post("/logout", authGuard, logout);
 
 // 2fa setup
-router.post("/2fa/setup", setup2fa);
+router.post("/2fa/setup", authGuard, setup2fa);
 
 // 2fa verify
-router.post("/2fa/verify", verify2fa);
+router.post("/2fa/verify", mfaPendingGuard, verify2fa);
 
 // 2fa reset
-router.post("/2fa/reset", reset2fa);
+router.post("/2fa/reset", authGuard, reset2fa);
 
 export default router;

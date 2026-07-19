@@ -20,25 +20,37 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         required: false,
     },
-    mfaSecret: { 
+    mfaSecret: {
+        type: String,
+        default: null
+    },
+    mfaBackupCodes: {
+        type: [String],
+        default: []
+    },
+    failedAttempts: {
+        type: Number,
+        default: 0
+    },
+    lockedUntil: {
+        type: Date,
+        default: null
+    },
+    passwordChangedAt: {
+        type: Date,
+        default: Date.now
+    },
+    activationOtp: { 
         type: String, 
         default: null 
     },
-    mfaBackupCodes: { 
-        type: [String], 
-        default: [] 
-    },
-    failedAttempts: { 
-        type: Number, 
-        default: 0 
-    },
-    lockedUntil: {
+    activationOtpExpiry: { 
         type: Date, 
         default: null 
     },
-    passwordChangedAt: { 
-        type: Date, 
-        default: Date.now 
+    isVerified: { 
+        type: Boolean, 
+        default: false 
     },
 }, {
     timestamps: true

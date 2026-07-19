@@ -1,80 +1,105 @@
 import { useState } from "react";
-import Login          from "./pages/Login";
-import Register       from "./pages/Register";
-import MFA from "./pages/MultiFactorAuth";
-import ChangePassword from "./pages/ForgotPassword";
-import tokens         from "./styles/tokens";
+import Login             from "./pages/Login";
+import Register          from "./pages/Register";
+import MFA               from "./pages/MultiFactorAuth";
+import ChangePassword    from "./pages/ForgotPassword";
+import Dashboard         from "./pages/Dashboard";
+import EmailVerification from "./pages/EmailVerification";
+import tokens            from "./styles/tokens";
 import "./styles/global.css";
 
 const { color, font } = tokens;
 
-/**
- * SCREENS — preview nav pill config.
- * Remove this and the <nav> block below before production.
- */
-const SCREENS = [
-  { id: "login",           label: "Login" },
-  { id: "register",        label: "Register" },
-  { id: "mfa",             label: "MFA" },
-  { id: "change-password", label: "Change password" },
-];
+// Screens that are only for unauthenticated users
+const AUTH_SCREENS = ["login", "register", "mfa", "change-password", "verify-email"];
 
-const PAGE_MAP = {
-  login:            Login,
-  register:         Register,
-  mfa:              MFA,
-  "change-password":ChangePassword,
-};
-
-/**
- * App
- * Single routing layer — knows which screen to show, nothing else.
- * Replace the useState router with react-router-dom when wiring the real backend.
- */
 export default function App() {
-  const [screen, setScreen] = useState("login");
+  const [screen,     setScreen]     = useState("login");
+  const [screenState, setScreenState] = useState({}); // carries data between screens
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const ActivePage = PAGE_MAP[screen] ?? Login;
+  /**
+   * navigate(target, state?)
+   * Controls all screen transitions.
+   * Optional state object is passed as props to the next screen
+   * e.g. navigate("verify-email", { email: "user@example.com" })
+   */
+  const navigate = (target, state = {}) => {
+    if (target === "dashboard" && !isLoggedIn) {
+      setScreen("login");
+      return;
+    }
+    if (AUTH_SCREENS.includes(target) && isLoggedIn) {
+      setScreen("dashboard");
+      return;
+    }
+    setScreenState(state);
+    setScreen(target);
+  };
+
+  const onLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setScreen("dashboard");
+    setScreenState({});
+  };
+
+  const onLogout = () => {
+    setIsLoggedIn(false);
+    setScreen("login");
+    setScreenState({});
+  };
+
+  // Guard: redirect if trying to access wrong screen for auth state
+  const resolvedScreen = (() => {
+    if (isLoggedIn  && AUTH_SCREENS.includes(screen)) return "dashboard";
+    if (!isLoggedIn && screen === "dashboard")         return "login";
+    return screen;
+  })();
+
+  // Dashboard layout
+  if (resolvedScreen === "dashboard") {
+    return (
+      <div className="auth-page">
+        <Dashboard navigate={navigate} onLogout={onLogout} />
+      </div>
+    );
+  }
+
+  // Render the active auth screen, passing screenState as spread props
+  const renderScreen = () => {
+    const commonProps = { navigate, onLoginSuccess };
+
+    switch (resolvedScreen) {
+      case "login":
+        // Pass success message if coming from email verification
+        return <Login {...commonProps} successMessage={screenState.message} />;
+
+      case "register":
+        return <Register {...commonProps} />;
+
+      case "mfa":
+        return <MFA {...commonProps} />;
+
+      case "verify-email":
+        // email is passed from Register on success
+        return (
+          <EmailVerification
+            {...commonProps}
+            email={screenState.email ?? ""}
+          />
+        );
+
+      case "change-password":
+        return <ChangePassword {...commonProps} />;
+
+      default:
+        return <Login {...commonProps} />;
+    }
+  };
 
   return (
     <div className="auth-page">
-
-      {/* ── Dev-only preview nav — remove in production ──────────── */}
-      <nav
-        aria-label="Preview navigation"
-        style={{
-          display:      "flex",
-          gap:          "6px",
-          marginBottom: "20px",
-          flexWrap:     "wrap",
-          justifyContent:"center",
-        }}
-      >
-        {SCREENS.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setScreen(s.id)}
-            style={{
-              padding:      "5px 12px",
-              borderRadius: "20px",
-              fontSize:     font.sizeSm,
-              fontWeight:   font.weightMedium,
-              cursor:       "pointer",
-              border:       `1.5px solid ${screen === s.id ? color.cta : color.border}`,
-              background:   screen === s.id ? color.cta : "#fff",
-              color:        screen === s.id ? "#fff" : color.textSecondary,
-              transition:   "all 0.15s",
-              fontFamily:   font.family,
-            }}
-          >
-            {s.label}
-          </button>
-        ))}
-      </nav>
-      {/* ── End dev nav ───────────────────────────────────────────── */}
-
-      <ActivePage navigate={setScreen} />
-
+      {renderScreen()}
       <p className="page-footer">
         Protected by end-to-end encryption · Argon2id · TOTP MFA
       </p>

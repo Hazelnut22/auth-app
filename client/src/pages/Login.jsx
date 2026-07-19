@@ -5,37 +5,63 @@ import PasswordInput from "../components/ui/PasswordInput";
 import Button        from "../components/ui/Button";
 import CaptchaWidget from "../components/ui/CaptchaWidget";
 import LinkButton    from "../components/ui/LinkButton";
+import Alert         from "../components/ui/Alert";
+import api           from "../api/axios.js";
 import tokens        from "../styles/tokens";
 
 const { color, font } = tokens;
 
 /**
  * Login
- * Collects email + password, verifies CAPTCHA, then hands off to MFA.
  *
  * Props:
- *   navigate  {(screen: string) => void}  — provided by App router
+ *   navigate        {(screen: string) => void}
+ *   onLoginSuccess  {() => void}  — called when fully authenticated (no MFA)
  */
-export default function Login({ navigate }) {
-  const [email,         setEmail]         = useState("");
-  const [password,      setPassword]      = useState("");
-  const [captcha,       setCaptcha]       = useState({ token: "", answer: "" });
-  const [captchaError,  setCaptchaError]  = useState("");
-  const [rememberMe,    setRememberMe]    = useState(false);
+export default function Login({ navigate, onLoginSuccess, successMessage }) {
+  const [email,        setEmail]        = useState("");
+  const [password,     setPassword]     = useState("");
+  const [captcha,      setCaptcha]      = useState({ token: "", answer: "" });
+  const [captchaError, setCaptchaError] = useState("");
+  const [serverError,  setServerError]  = useState("");
+  const [rememberMe,   setRememberMe]   = useState(false);
+  const [loading,      setLoading]      = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!captcha.token || !captcha.answer) {
       setCaptchaError("Please complete the CAPTCHA.");
       return;
     }
+
+    setLoading(true);
+    setServerError("");
     setCaptchaError("");
-    // TODO: call POST /auth/login with {
-    //   email, password,
-    //   captchaToken: captcha.token,
-    //   captchaAnswer: captcha.answer
-    // }
-    navigate("mfa");
+
+    try {
+      const res = await api.post("/app/auth/login", {
+        email,
+        password,
+        captchaToken:  captcha.token,
+        captchaAnswer: captcha.answer,
+      });
+
+      if (res.data.mfaRequired) {
+        // MFA enabled — go to TOTP screen before granting access
+        navigate("mfa");
+      } else {
+        // No MFA — fully authenticated, go straight to dashboard
+        onLoginSuccess();
+      }
+
+    } catch (err) {
+      setServerError(
+        err.response?.data?.error ?? "Login failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const footer = (
@@ -52,6 +78,13 @@ export default function Login({ navigate }) {
       footer={footer}
     >
       <form onSubmit={handleSubmit} noValidate>
+
+        {successMessage && <Alert variant="success">{successMessage}</Alert>}
+        
+        {serverError && (
+          <Alert variant="error">{serverError}</Alert>
+        )}
+
         <FormField id="login-email" label="Email address">
           <input
             id="login-email"
@@ -62,16 +95,10 @@ export default function Login({ navigate }) {
             autoComplete="email"
             required
             style={{
-              width:        "100%",
-              height:       "42px",
-              padding:      "0 13px",
-              border:       `1.5px solid ${color.border}`,
-              borderRadius: "6px",
-              fontSize:     font.sizeLg,
-              color:        color.textPrimary,
-              background:   "#fff",
-              outline:      "none",
-              fontFamily:   font.family,
+              width: "100%", height: "42px", padding: "0 13px",
+              border: `1.5px solid ${color.border}`, borderRadius: "6px",
+              fontSize: font.sizeLg, color: color.textPrimary,
+              background: "#fff", outline: "none", fontFamily: font.family,
             }}
             onFocus={(e) => {
               e.target.style.borderColor = color.borderFocus;
@@ -95,21 +122,14 @@ export default function Login({ navigate }) {
           />
         </FormField>
 
-        {/* Remember me + forgot password row */}
         <div style={{
-          display:        "flex",
-          alignItems:     "center",
-          justifyContent: "space-between",
-          marginBottom:   "20px",
+          display: "flex", alignItems: "center",
+          justifyContent: "space-between", marginBottom: "20px",
         }}>
           <label style={{
-            display:    "flex",
-            alignItems: "center",
-            gap:        "7px",
-            fontSize:   font.sizeMd,
-            color:      color.textSecondary,
-            cursor:     "pointer",
-            userSelect: "none",
+            display: "flex", alignItems: "center", gap: "7px",
+            fontSize: font.sizeMd, color: color.textSecondary,
+            cursor: "pointer", userSelect: "none",
           }}>
             <input
               type="checkbox"
@@ -119,7 +139,6 @@ export default function Login({ navigate }) {
             />
             Keep me signed in
           </label>
-
           <LinkButton
             style={{ fontSize: font.sizeMd, color: color.textSecondary, fontWeight: 500 }}
             onClick={() => navigate("change-password")}
@@ -134,9 +153,10 @@ export default function Login({ navigate }) {
           error={captchaError}
         />
 
-        <Button type="submit">
-          Sign in
+        <Button type="submit" disabled={loading}>
+          {loading ? "Signing in…" : "Sign in"}
         </Button>
+
       </form>
     </AuthCard>
   );
