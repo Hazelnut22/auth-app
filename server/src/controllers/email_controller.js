@@ -1,5 +1,5 @@
 import { transporter } from "../config/email_config.js"
-import { Verification_Email_Template } from "../middleware/email_template.js";
+import { Verification_Email_Template } from "../utils/email_template.js";
 
 export const sendVerificationCode = async (email, verificationCode) => {
     try {

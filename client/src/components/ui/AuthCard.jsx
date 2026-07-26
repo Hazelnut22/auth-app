@@ -42,16 +42,6 @@ const styles = {
   },
 };
 
-/**
- * AuthCard
- * Shared card shell for every auth screen.
- *
- * Props:
- *   heading    {string}      — primary heading
- *   subheading {string}      — secondary descriptor
- *   footer     {ReactNode}   — optional footer slot (sign-in / register link)
- *   children   {ReactNode}   — form body
- */
 export default function AuthCard({ heading, subheading, footer, children }) {
   return (
     <div style={styles.card}>

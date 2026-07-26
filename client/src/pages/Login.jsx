@@ -11,20 +11,12 @@ import tokens        from "../styles/tokens";
 
 const { color, font } = tokens;
 
-/**
- * Login
- *
- * Props:
- *   navigate        {(screen: string) => void}
- *   onLoginSuccess  {() => void}  — called when fully authenticated (no MFA)
- */
 export default function Login({ navigate, onLoginSuccess, successMessage }) {
   const [email,        setEmail]        = useState("");
   const [password,     setPassword]     = useState("");
   const [captcha,      setCaptcha]      = useState({ token: "", answer: "" });
   const [captchaError, setCaptchaError] = useState("");
   const [serverError,  setServerError]  = useState("");
-  const [rememberMe,   setRememberMe]   = useState(false);
   const [loading,      setLoading]      = useState(false);
 
   const handleSubmit = async (e) => {
@@ -47,11 +39,9 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
         captchaAnswer: captcha.answer,
       });
 
-      if (res.data.mfaRequired) {
-        // MFA enabled — go to TOTP screen before granting access
+      if (res.data.data.mfaRequired) {
         navigate("mfa");
       } else {
-        // No MFA — fully authenticated, go straight to dashboard
         onLoginSuccess();
       }
 
@@ -66,15 +56,15 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
 
   const footer = (
     <>
-      Don&apos;t have an account?{" "}
+      Don&apos;t have an account yet?{" "}
       <LinkButton onClick={() => navigate("register")}>Create one</LinkButton>
     </>
   );
 
   return (
     <AuthCard
-      heading="Sign in"
-      subheading="Enter your credentials to access your account."
+      heading="Login"
+      subheading="Please enter your credentials."
       footer={footer}
     >
       <form onSubmit={handleSubmit} noValidate>
@@ -126,22 +116,9 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
           display: "flex", alignItems: "center",
           justifyContent: "space-between", marginBottom: "20px",
         }}>
-          <label style={{
-            display: "flex", alignItems: "center", gap: "7px",
-            fontSize: font.sizeMd, color: color.textSecondary,
-            cursor: "pointer", userSelect: "none",
-          }}>
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              style={{ width: "15px", height: "15px", accentColor: color.cta }}
-            />
-            Keep me signed in
-          </label>
           <LinkButton
             style={{ fontSize: font.sizeMd, color: color.textSecondary, fontWeight: 500 }}
-            onClick={() => navigate("change-password")}
+            onClick={() => navigate("forgot-password")}
           >
             Forgot password?
           </LinkButton>

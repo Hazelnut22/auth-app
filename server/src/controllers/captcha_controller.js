@@ -9,7 +9,7 @@ const CAPTCHA_CONFIG = {
   width:         220,
   height:        70,
   fontSize:      36,
-  chars: "ABCDEFGHJKLMNPQRSTUVWXYZ23456789",
+  chars: "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789",
 };
 
 const usedTokens = new Map(); // jti → expiresAt
@@ -138,7 +138,7 @@ export function generateCaptcha() {
 
   const token = jwt.sign(
     {
-      answer:  text.toUpperCase(), // store normalised — comparison is case-insensitive
+      answer:  text,
       purpose: "captcha",
       jti,                         // JWT ID — lets us blacklist after single use
     },
@@ -200,9 +200,9 @@ export function verifyCaptchaToken(token, answer) {
     (payload.exp ?? 0) * 1000 // store until the JWT's own expiry for GC purposes
   );
 
-  // 5. Compare answer (case-insensitive)
-  const expected = (payload.answer ?? "").toUpperCase().trim();
-  const provided = (answer ?? "").toUpperCase().trim();
+  // 5. Compare answer
+  const expected = (payload.answer ?? "").trim();
+  const provided = (answer ?? "").trim();
 
   if (expected !== provided) {
     return { valid: false, reason: "Incorrect CAPTCHA answer." };

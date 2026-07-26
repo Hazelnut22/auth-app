@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import dbConnect from "./config/db_connect.js";
 import authRoutes from "./routes/auth_routes.js";
 import { globalLimiter } from "./middleware/rate_limiter.js";
+import globalErrorHandler from "./controllers/error_controller.js";
 
 dotenv.config();
 dbConnect();
@@ -38,6 +39,8 @@ app.use("/app/auth", authRoutes);
 app.use((req, res) => {
   res.status(404).json({ message: "Not found." });
 });
+
+app.use(globalErrorHandler);
 
 // port
 const PORT = process.env.PORT || 7002;

@@ -28,14 +28,6 @@ const baseStyle = {
   marginBottom: "18px",
 };
 
-/**
- * Alert
- * Displays a contextual feedback message.
- *
- * Props:
- *   variant  {"error" | "success" | "info"}   default "info"
- *   children {ReactNode}
- */
 export default function Alert({ variant = "info", children }) {
   return (
     <div

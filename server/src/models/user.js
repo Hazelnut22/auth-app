@@ -40,17 +40,29 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    activationOtp: { 
+    activationOtp: {
+        type: String,
+        default: null
+    },
+    activationOtpExpiry: {
+        type: Date,
+        default: null
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    passwordResetOtp: { 
         type: String, 
         default: null 
     },
-    activationOtpExpiry: { 
+    passwordResetExpiry: { 
         type: Date, 
         default: null 
     },
-    isVerified: { 
-        type: Boolean, 
-        default: false 
+    lastLoginAt: { 
+        type: Date, 
+        default: null 
     },
 }, {
     timestamps: true

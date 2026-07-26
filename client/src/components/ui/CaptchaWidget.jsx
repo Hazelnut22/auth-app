@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import tokens from "../../styles/tokens";
+import api from "../../api/axios.js";
 
 const { color, font, radius } = tokens;
-
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:7001";
 
 const styles = {
   wrapper: {
@@ -59,7 +58,6 @@ const styles = {
     outline: "none",
     letterSpacing: "3px",
     fontWeight: font.weightSemibold,
-    textTransform: "uppercase",
     transition: "border-color 0.15s, box-shadow 0.15s",
     fontFamily: font.family,
   },
@@ -111,24 +109,6 @@ function RefreshIcon({ spinning }) {
   );
 }
 
-/**
- * CaptchaWidget
- * Self-hosted canvas CAPTCHA — no third-party services.
- *
- * Behaviour:
- *   - Fetches a fresh challenge from GET /auth/captcha on mount
- *   - Renders the returned base64 image
- *   - User types the answer; answer is uppercased automatically
- *   - Refresh button fetches a new challenge
- *   - Calls onVerify({ token, answer }) when the user types — parent
- *     includes both fields in the form submission body
- *   - Calls onExpire() after 2 minutes so the parent can warn the user
- *
- * Props:
- *   onVerify   {({ token: string, answer: string }) => void}
- *   onExpire   {() => void}   — optional, called when the 2-min window closes
- *   error      {string}       — optional, shown below input (e.g. "Wrong answer")
- */
 export default function CaptchaWidget({ onVerify, onExpire, error }) {
   const [imageDataUri, setImageDataUri] = useState(null);
   const [token, setToken] = useState("");
@@ -146,11 +126,8 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
     onVerify?.({ token: "", answer: "" }); // clear parent state while refreshing
 
     try {
-      const res = await fetch(`${API_URL}/app/auth/captcha`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to load CAPTCHA.");
-      const data = await res.json();
+      const res = await api.get("/app/auth/captcha");
+      const data = await res.data.data;
       setImageDataUri(data.imageDataUri);
       setToken(data.token);
     } catch {
@@ -178,7 +155,7 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
 
   // Notify parent whenever token or answer changes
   const handleAnswerChange = (e) => {
-    const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const value = e.target.value.replace(/[^A-Za-z0-9]/g, "");
     setAnswer(value);
     onVerify?.({ token, answer: value });
   };
@@ -231,7 +208,6 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
         maxLength={6}
         autoComplete="off"
         autoCorrect="off"
-        autoCapitalize="characters"
         spellCheck="false"
         aria-label="CAPTCHA answer"
         style={{
@@ -257,7 +233,7 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
         </span>
       ) : (
         <span style={styles.hint}>
-          Not case-sensitive · Click <span style={{ fontWeight: 600 }}>↻</span> for a new one
+          Case-sensitive · Click <span style={{ fontWeight: 600 }}>↻</span> for a new one
         </span>
       )}
     </div>

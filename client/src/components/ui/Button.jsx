@@ -46,16 +46,6 @@ const disabledStyle = {
   color:      "#ffffff",
 };
 
-/**
- * Button
- *
- * Props:
- *   variant   {"primary" | "ghost"}  default "primary"
- *   disabled  {boolean}
- *   style     {object}               additional inline styles (e.g. marginTop)
- *   children  {ReactNode}
- *   All other props forwarded to <button>
- */
 export default function Button({
   variant  = "primary",
   disabled = false,
