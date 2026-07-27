@@ -4,15 +4,15 @@ import crypto           from "crypto";
 import { JWT_SECRET } from "../config/env.js";
 
 const CAPTCHA_CONFIG = {
-  length:        6,          // number of characters
-  expirySeconds: 120,        // 2 minutes — must complete within this window
+  length:        6,
+  expirySeconds: 120,
   width:         220,
   height:        70,
-  fontSize:      36,
+  fontSize:      24,
   chars: "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789",
 };
 
-const usedTokens = new Map(); // jti → expiresAt
+const usedTokens = new Map();
 
 
 function purgeExpiredTokens() {
@@ -32,27 +32,17 @@ function generateCaptchaText() {
 }
 
 // ─── Canvas renderer ─────────────────────────────────────────────
-/**
- * Renders the CAPTCHA text onto a canvas with:
- *   - Random background noise (dots)
- *   - Sine-wave horizontal distortion lines
- *   - Per-character rotation and vertical jitter
- *   - Random character colours (all dark enough to read)
- *
- * @param {string} text
- * @returns {string} base64-encoded PNG data URI
- */
 function renderCaptchaImage(text) {
   const { width, height, fontSize } = CAPTCHA_CONFIG;
   const canvas = createCanvas(width, height);
   const ctx    = canvas.getContext("2d");
 
   // ── Background ──────────────────────────────────────────────────
-  ctx.fillStyle = "#F5F0E8";
+  ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
 
   // ── Background noise dots ───────────────────────────────────────
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 300; i++) {
     ctx.beginPath();
     ctx.arc(
       Math.random() * width,
@@ -66,7 +56,7 @@ function renderCaptchaImage(text) {
   }
 
   // ── Distortion lines (sine wave) ────────────────────────────────
-  for (let l = 0; l < 4; l++) {
+  for (let l = 0; l < 30; l++) {
     ctx.beginPath();
     ctx.strokeStyle = randomDarkColor(0.3);
     ctx.lineWidth   = 1.5;
@@ -88,18 +78,18 @@ function renderCaptchaImage(text) {
   text.split("").forEach((char, i) => {
     const x      = charWidth * (i + 0.8) + Math.random() * 6 - 3;
     const y      = height / 2 + Math.random() * 10 - 5;
-    const angle  = (Math.random() - 0.5) * 0.4; // ±~23 degrees
+    const angle  = (Math.random() - 0.5) * 0.4;
 
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(angle);
-    ctx.fillStyle = randomDarkColor(1);
+    ctx.fillStyle = randomDarkColor(0.8);
     ctx.fillText(char, 0, 0);
     ctx.restore();
   });
 
   // ── Foreground noise lines (over the text) ───────────────────────
-  for (let l = 0; l < 2; l++) {
+  for (let l = 0; l < 20; l++) {
     ctx.beginPath();
     ctx.strokeStyle = randomDarkColor(0.15);
     ctx.lineWidth   = 1;
@@ -111,24 +101,14 @@ function renderCaptchaImage(text) {
   return canvas.toDataURL("image/png"); // base64 PNG data URI
 }
 
-/** Returns a random dark hex colour at the given opacity */
 function randomDarkColor(alpha) {
-  const r = Math.floor(Math.random() * 120);       // keep dark
-  const g = Math.floor(Math.random() * 120);
-  const b = Math.floor(Math.random() * 160);
+  const r = Math.floor(Math.random() * 90);       // keep dark
+  const g = Math.floor(Math.random() * 90);
+  const b = Math.floor(Math.random() * 90);
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
 // ─── Public API ───────────────────────────────────────────────────
-
-/**
- * generateCaptcha
- * Creates a new CAPTCHA challenge.
- *
- * @returns {{ token: string, imageDataUri: string }}
- *   token        — signed JWT containing the answer (send to frontend, opaque)
- *   imageDataUri — base64 PNG to render as <img src={imageDataUri} />
- */
 export function generateCaptcha() {
   purgeExpiredTokens();
 
@@ -152,27 +132,10 @@ export function generateCaptcha() {
   return { token, imageDataUri };
 }
 
-/**
- * verifyCaptchaToken
- * Verifies a submitted CAPTCHA answer against the signed token.
- *
- * Security properties:
- *   - Rejects expired tokens (JWT expiry)
- *   - Rejects replayed tokens (one-time-use blacklist)
- *   - Rejects tampered tokens (JWT signature)
- *   - Case-insensitive comparison (UX)
- *
- * Always blacklists the token after calling this — whether it passes or fails.
- * This prevents an attacker from repeatedly submitting until they guess right.
- *
- * @param {string} token   — the JWT from the frontend
- * @param {string} answer  — the user's typed answer
- * @returns {{ valid: boolean, reason?: string }}
- */
 export function verifyCaptchaToken(token, answer) {
   let payload;
 
-  // 1. Verify signature and expiry
+  // Verify signature and expiry
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
@@ -182,25 +145,24 @@ export function verifyCaptchaToken(token, answer) {
     };
   }
 
-  // 2. Confirm this token was issued for CAPTCHA, not another purpose
+  // Confirm this token was issued for CAPTCHA, not another purpose
   if (payload.purpose !== "captcha") {
     return { valid: false, reason: "Invalid CAPTCHA token." };
   }
 
-  // 3. One-time-use check — reject if already submitted
+  // One-time-use check — reject if already submitted
   if (usedTokens.has(payload.jti)) {
     return { valid: false, reason: "CAPTCHA already used. Please refresh." };
   }
 
-  // 4. Blacklist immediately — before checking the answer.
-  //    This means even a wrong guess consumes the token.
-  //    Forces the user to fetch a new CAPTCHA on failure.
+
+  // Forces the user to fetch a new CAPTCHA on failure.
   usedTokens.set(
     payload.jti,
     (payload.exp ?? 0) * 1000 // store until the JWT's own expiry for GC purposes
   );
 
-  // 5. Compare answer
+  // Compare answer
   const expected = (payload.answer ?? "").trim();
   const provided = (answer ?? "").trim();
 

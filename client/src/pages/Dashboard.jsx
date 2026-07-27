@@ -135,7 +135,7 @@ export default function Dashboard({ navigate, onLogout }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: color.bgPage, display: "flex" }}>
+    <div style={{ minHeight: "100vh", display: "flex" }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────── */}
       <Sidebar
@@ -251,176 +251,173 @@ export default function Dashboard({ navigate, onLogout }) {
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* Account info card */}
-          <div style={{
-            background: color.bgCard,
-            borderRadius: radius.xl,
-            boxShadow: shadow.card,
-            padding: "28px 24px",
-          }}>
-            <h2 style={{
-              fontSize: font.sizeLg,
-              fontWeight: font.weightSemibold,
-              color: color.textPrimary,
-              marginBottom: "20px",
+            {/* Account info card */}
+            <div style={{
+              width: "100%"
             }}>
-              Account details
-            </h2>
-
-            {[
-              { label: "Username", value: user?.username },
-              { label: "Email", value: user?.email },
-              { label: "Member since", value: formatDate(user?.memberSince).split(",")[0] },
-              { label: "Last signed in", value: timeAgo(user?.lastLoginAt) },
-              { label: "MFA", value: user?.isMfaActive ? "Enabled ✓" : "Disabled" },
-              {
-                label: "Password expires",
-                value: user?.passwordExpired
-                  ? "Expired — update now"
-                  : `In ${user?.daysUntilExpiry} days`,
-              },
-            ].map(({ label, value }) => (
-              <div key={label} style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "10px 0",
-                borderBottom: `1px solid ${color.divider}`,
-                gap: "12px",
+              <h2 style={{
+                fontSize: font.sizeLg,
+                fontWeight: font.weightSemibold,
+                color: color.textPrimary,
+                marginBottom: "20px",
               }}>
-                <span style={{ fontSize: font.sizeSm, color: color.textSecondary, flexShrink: 0 }}>
-                  {label}
-                </span>
-                <span style={{
-                  fontSize: font.sizeSm,
-                  fontWeight: font.weightMedium,
-                  color: color.textPrimary,
-                  textAlign: "right",
-                  wordBreak: "break-all",
+                Account details
+              </h2>
+
+              {[
+                { label: "Username", value: user?.username },
+                { label: "Email", value: user?.email },
+                { label: "Member since", value: formatDate(user?.memberSince).split(",")[0] },
+                { label: "Last signed in", value: timeAgo(user?.lastLoginAt) },
+                { label: "MFA", value: user?.isMfaActive ? "Enabled ✓" : "Disabled" },
+                {
+                  label: "Password expires",
+                  value: user?.passwordExpired
+                    ? "Expired — update now"
+                    : `In ${user?.daysUntilExpiry} days`,
+                },
+              ].map(({ label, value }) => (
+                <div key={label} style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "10px 0",
+                  borderBottom: `1px solid ${color.divider}`,
+                  gap: "12px",
                 }}>
-                  {value ?? "—"}
-                </span>
-              </div>
-            ))}
+                  <span style={{ fontSize: font.sizeSm, color: color.textSecondary, flexShrink: 0 }}>
+                    {label}
+                  </span>
+                  <span style={{
+                    fontSize: font.sizeSm,
+                    fontWeight: font.weightMedium,
+                    color: color.textPrimary,
+                    textAlign: "right",
+                    wordBreak: "break-all",
+                  }}>
+                    {value ?? "—"}
+                  </span>
+                </div>
+              ))}
 
-            {/* Quick actions */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
-              <button
-                onClick={() => navigate("change-password")}
-                style={{
-                  width: "100%",
-                  height: "38px",
-                  background: color.cta,
-                  border: "none",
-                  borderRadius: radius.md,
-                  color: "#fff",
-                  fontSize: font.sizeMd,
-                  fontWeight: font.weightSemibold,
-                  cursor: "pointer",
-                  fontFamily: font.family,
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = color.ctaHover}
-                onMouseLeave={(e) => e.currentTarget.style.background = color.cta}
-              >
-                Change password
-              </button>
-
-              {!user?.isMfaActive && (
+              {/* Quick actions */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
                 <button
-                  onClick={() => navigate("mfa-setup")}
+                  onClick={() => navigate("change-password")}
                   style={{
                     width: "100%",
                     height: "38px",
-                    background: color.bgAccentLight,
-                    border: `1.5px solid ${color.cta}`,
+                    background: color.cta,
+                    border: "none",
                     borderRadius: radius.md,
-                    color: color.cta,
+                    color: "#fff",
                     fontSize: font.sizeMd,
                     fontWeight: font.weightSemibold,
                     cursor: "pointer",
                     fontFamily: font.family,
                     transition: "background 0.15s",
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "#EDDDCC"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = color.bgAccentLight}
+                  onMouseEnter={(e) => e.currentTarget.style.background = color.ctaHover}
+                  onMouseLeave={(e) => e.currentTarget.style.background = color.cta}
                 >
-                  Enable two-factor auth
+                  Change password
                 </button>
-              )}
+
+                {!user?.isMfaActive && (
+                  <button
+                    onClick={() => navigate("mfa-setup")}
+                    style={{
+                      width: "100%",
+                      height: "38px",
+                      background: color.bgAccentLight,
+                      border: `1.5px solid ${color.cta}`,
+                      borderRadius: radius.md,
+                      color: color.cta,
+                      fontSize: font.sizeMd,
+                      fontWeight: font.weightSemibold,
+                      cursor: "pointer",
+                      fontFamily: font.family,
+                      transition: "background 0.15s",
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "#EDDDCC"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = color.bgAccentLight}
+                  >
+                    Enable two-factor auth
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div style={{
-          background: color.bgCard,
-          borderRadius: radius.xl,
-          boxShadow: shadow.card,
-          padding: "28px 28px",
-          marginBottom: "32px",
-        }}>
-          <h2 style={{
-            fontSize: font.sizeLg,
-            fontWeight: font.weightSemibold,
-            color: color.textPrimary,
-            marginBottom: "6px",
+          <div style={{
+            background: color.bgCard,
+            borderRadius: radius.xl,
+            boxShadow: shadow.card,
+            padding: "28px 28px",
+            marginBottom: "32px",
           }}>
-            Recent account activity
-          </h2>
-          <p style={{ fontSize: font.sizeSm, color: color.textSecondary, marginBottom: "20px" }}>
-            Last 5 security events on your account. Review for any unrecognised activity.
-          </p>
-
-          {recentActivity.length === 0 ? (
-            <p style={{ fontSize: font.sizeSm, color: color.textMuted }}>
-              No recent activity recorded.
+            <h2 style={{
+              fontSize: font.sizeLg,
+              fontWeight: font.weightSemibold,
+              color: color.textPrimary,
+              marginBottom: "6px",
+            }}>
+              Recent account activity
+            </h2>
+            <p style={{ fontSize: font.sizeSm, color: color.textSecondary, marginBottom: "20px" }}>
+              Last 5 security events on your account. Review for any unrecognised activity.
             </p>
-          ) : (
-            <div>
-              {recentActivity.map((event, i) => {
-                const { label, color: evColor } = eventLabel(event.event);
-                return (
-                  <div key={i} style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "12px 0",
-                    borderBottom: i < recentActivity.length - 1
-                      ? `1px solid ${color.divider}` : "none",
-                    gap: "12px",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      {/* Dot */}
-                      <div style={{
-                        width: "8px",
-                        height: "8px",
-                        borderRadius: "50%",
-                        background: evColor,
-                        flexShrink: 0,
-                      }} />
-                      <span style={{
-                        fontSize: font.sizeMd,
-                        color: color.textPrimary,
-                        fontWeight: font.weightMedium,
-                      }}>
-                        {label}
-                      </span>
+
+            {recentActivity.length === 0 ? (
+              <p style={{ fontSize: font.sizeSm, color: color.textMuted }}>
+                No recent activity recorded.
+              </p>
+            ) : (
+              <div>
+                {recentActivity.map((event, i) => {
+                  const { label, color: evColor } = eventLabel(event.event);
+                  return (
+                    <div key={i} style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "12px 0",
+                      borderBottom: i < recentActivity.length - 1
+                        ? `1px solid ${color.divider}` : "none",
+                      gap: "12px",
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        {/* Dot */}
+                        <div style={{
+                          width: "8px",
+                          height: "8px",
+                          borderRadius: "50%",
+                          background: evColor,
+                          flexShrink: 0,
+                        }} />
+                        <span style={{
+                          fontSize: font.sizeMd,
+                          color: color.textPrimary,
+                          fontWeight: font.weightMedium,
+                        }}>
+                          {label}
+                        </span>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <p style={{ fontSize: font.sizeSm, color: color.textSecondary }}>
+                          {timeAgo(event.timestamp)}
+                        </p>
+                        <p style={{ fontSize: font.sizeXs, color: color.textMuted }}>
+                          {formatDate(event.timestamp)}
+                        </p>
+                      </div>
                     </div>
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <p style={{ fontSize: font.sizeSm, color: color.textSecondary }}>
-                        {timeAgo(event.timestamp)}
-                      </p>
-                      <p style={{ fontSize: font.sizeXs, color: color.textMuted }}>
-                        {formatDate(event.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
       </main>

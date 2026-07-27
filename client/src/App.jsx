@@ -10,6 +10,7 @@ import MFASetup from "./pages/MfaSetup";
 import ForgetPassword from "./pages/ForgetPassword";
 import api from "./api/axios";
 import ChangePassword from "./pages/ChangePassword";
+import { ToastProvider } from "./components/ui/Toast";
 
 const { color, font } = tokens;
 
@@ -18,7 +19,7 @@ const AUTH_SCREENS = ["login", "register", "mfa", "forgot-password", "verify-ema
 
 export default function App() {
   const [screen, setScreen] = useState("login");
-  const [screenState, setScreenState] = useState({}); // carries data between screens
+  const [screenState, setScreenState] = useState({});
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [checking, setChecking] = useState(true);
 
@@ -80,7 +81,7 @@ export default function App() {
     setScreenState({});
   };
 
-  // Guard: redirect if trying to access wrong screen for auth state
+  // redirect if trying to access wrong screen for auth state
   const resolvedScreen = (() => {
     if (isLoggedIn && AUTH_SCREENS.includes(screen)) return "dashboard";
     if (!isLoggedIn && screen === "dashboard") return "login";
@@ -131,11 +132,13 @@ export default function App() {
   };
 
   return (
-    <div className="auth-page">
-      {renderScreen()}
-      <p className="page-footer">
-        Protected by end-to-end encryption · Argon2id · TOTP MFA
-      </p>
-    </div>
+    <ToastProvider>
+      <div className="auth-page">
+        {renderScreen()}
+        <p className="page-footer">
+          copyright @ maria
+        </p>
+      </div>
+    </ToastProvider>
   );
 }

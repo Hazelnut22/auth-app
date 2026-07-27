@@ -34,17 +34,6 @@ function EmailIcon() {
   );
 }
 
-/**
- * MFA
- * Three modes:
- *   "totp"   — 6-digit code from authenticator app  (primary)
- *   "email"  — 6-digit code sent to registered email (fallback)
- *   "backup" — single-use backup code               (last resort)
- *
- * Props:
- *   navigate        {(screen: string) => void}
- *   onLoginSuccess  {() => void}
- */
 export default function MFA({ navigate, onLoginSuccess }) {
   // mode controls which UI + which API endpoint is used
   const [mode,        setMode]        = useState("totp");

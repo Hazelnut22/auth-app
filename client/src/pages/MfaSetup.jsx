@@ -6,79 +6,12 @@ import Button    from "../components/ui/Button";
 import LinkButton from "../components/ui/LinkButton";
 import api       from "../api/axios.js";
 import tokens    from "../styles/tokens";
+import StepIndicator from "../components/ui/StepIndicator.jsx";
 
 const { color, font, radius } = tokens;
 
-/* ── Step indicator ─────────────────────────────────────────────── */
-function StepIndicator({ current }) {
-  const steps = ["Get QR code", "Scan & save", "Confirm code"];
-  return (
-    <div style={{
-      display:       "flex",
-      alignItems:    "center",
-      marginBottom:  "28px",
-      gap:           "0",
-    }}>
-      {steps.map((label, i) => {
-        const num    = i + 1;
-        const active = current === num;
-        const done   = current > num;
-        return (
-          <div key={i} style={{ display: "flex", alignItems: "center", flex: i < 2 ? 1 : "none" }}>
-            {/* Circle */}
-            <div style={{
-              width:          "28px",
-              height:         "28px",
-              borderRadius:   "50%",
-              background:     done ? color.success : active ? color.cta : color.divider,
-              color:          done || active ? "#fff" : color.textMuted,
-              display:        "flex",
-              alignItems:     "center",
-              justifyContent: "center",
-              fontSize:       font.sizeSm,
-              fontWeight:     font.weightSemibold,
-              flexShrink:     0,
-              transition:     "background 0.2s",
-            }}>
-              {done ? "✓" : num}
-            </div>
-            {/* Label */}
-            <span style={{
-              fontSize:    font.sizeSm,
-              color:       active ? color.textPrimary : color.textMuted,
-              fontWeight:  active ? font.weightMedium : font.weightRegular,
-              marginLeft:  "6px",
-              whiteSpace:  "nowrap",
-            }}>
-              {label}
-            </span>
-            {/* Connector line */}
-            {i < 2 && (
-              <div style={{
-                flex:       1,
-                height:     "1px",
-                background: done ? color.success : color.divider,
-                margin:     "0 8px",
-                transition: "background 0.2s",
-              }} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+const steps = ["Get QR code", "Scan & save", "Confirm code"];
 
-/**
- * MFASetup
- * Three-step flow:
- *   Step 1 — call /2fa/setup to get QR code
- *   Step 2 — user scans QR with authenticator app
- *   Step 3 — user enters a code to confirm it worked → /2fa/setup
- *
- * Props:
- *   navigate  {(screen: string) => void}
- */
 export default function MFASetup({ navigate }) {
   const [step,        setStep]        = useState(1);
   const [qrCode,      setQrCode]      = useState("");
@@ -179,7 +112,7 @@ export default function MFASetup({ navigate }) {
         heading="Set up two-factor auth"
         subheading="Scan the QR code below with your authenticator app, then click Continue."
       >
-        <StepIndicator current={2} />
+        <StepIndicator current={2} steps={steps} />
 
         {serverError && <Alert variant="error">{serverError}</Alert>}
 
@@ -233,7 +166,7 @@ export default function MFASetup({ navigate }) {
         </p>
 
         <Button onClick={() => { setStep(3); setServerError(""); }}>
-          I've scanned it — Continue
+          Continue
         </Button>
 
         <div style={{ textAlign: "center", marginTop: "16px" }}>
@@ -254,7 +187,7 @@ export default function MFASetup({ navigate }) {
       heading="Confirm your code"
       subheading="Enter the 6-digit code from your authenticator app to confirm it's working."
     >
-      <StepIndicator current={3} />
+      <StepIndicator current={3} steps={steps} />
 
       <form onSubmit={handleVerify} noValidate>
         {serverError && <Alert variant="error">{serverError}</Alert>}

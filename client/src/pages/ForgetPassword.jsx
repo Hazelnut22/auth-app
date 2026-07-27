@@ -10,58 +10,12 @@ import LinkButton    from "../components/ui/LinkButton";
 import { usePasswordStrength } from "../hooks/user_password_strength.js";
 import api    from "../api/axios.js";
 import tokens from "../styles/tokens";
+import StepIndicator from "../components/ui/StepIndicator.jsx";
 
 const { color, font } = tokens;
 
-/* ── Step indicator ─────────────────────────────────────────────── */
-function StepIndicator({ current }) {
-  const steps = ["Enter email", "Verify code", "New password"];
-  return (
-    <div style={{ display: "flex", alignItems: "center", marginBottom: "24px" }}>
-      {steps.map((label, i) => {
-        const num  = i + 1;
-        const done = current > num;
-        const active = current === num;
-        return (
-          <div key={i} style={{ display: "flex", alignItems: "center", flex: i < 2 ? 1 : "none" }}>
-            <div style={{
-              width: "26px", height: "26px", borderRadius: "50%", flexShrink: 0,
-              background: done ? color.success : active ? color.cta : color.divider,
-              color: done || active ? "#fff" : color.textMuted,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: font.sizeSm, fontWeight: font.weightSemibold,
-            }}>
-              {done ? "✓" : num}
-            </div>
-            <span style={{
-              fontSize: font.sizeSm, marginLeft: "5px", whiteSpace: "nowrap",
-              color: active ? color.textPrimary : color.textMuted,
-              fontWeight: active ? font.weightMedium : font.weightRegular,
-            }}>
-              {label}
-            </span>
-            {i < 2 && (
-              <div style={{
-                flex: 1, height: "1px", margin: "0 8px",
-                background: done ? color.success : color.divider,
-              }} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+const steps = ["Enter email", "Verify code", "New password"];
 
-/**
- * ForgotPassword
- * Step 1 — enter email → POST /password/forgot
- * Step 2 — enter OTP  → POST /password/verify  (reuses OtpInput)
- * Step 3 — new password → POST /password/reset
- *
- * Props:
- *   navigate {(screen: string, state?: object) => void}
- */
 export default function ForgetPassword({ navigate }) {
   const [step,         setStep]         = useState(1);
   const [email,        setEmail]        = useState("");
@@ -227,7 +181,7 @@ export default function ForgetPassword({ navigate }) {
         subheading={`We sent a 6-digit code to ${maskedEmail}.`}
         footer={footer}
       >
-        <StepIndicator current={2} />
+        <StepIndicator current={2} steps={steps} />
 
         <form onSubmit={handleVerifyOtp} noValidate>
           {serverError && <Alert variant="error">{serverError}</Alert>}
@@ -275,7 +229,7 @@ export default function ForgetPassword({ navigate }) {
       subheading="Choose a strong password you haven't used before."
       footer={footer}
     >
-      <StepIndicator current={3} />
+      <StepIndicator current={3} steps={steps}  />
 
       <form onSubmit={handleReset} noValidate>
         {serverError && <Alert variant="error">{serverError}</Alert>}

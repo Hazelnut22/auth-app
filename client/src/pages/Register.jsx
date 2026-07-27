@@ -13,13 +13,6 @@ import api from "../api/axios.js";
 
 const { color, font } = tokens;
 
-/**
- * Register
- * Collects name, email, password, confirms password, verifies CAPTCHA.
- *
- * Props:
- *   navigate  {(screen: string) => void}
- */
 export default function Register({ navigate }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

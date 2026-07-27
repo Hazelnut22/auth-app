@@ -19,6 +19,7 @@ const styles = {
   imageRow: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: "10px",
     marginBottom: "8px",
   },
@@ -28,7 +29,7 @@ const styles = {
     display: "block",
     height: "70px",
     userSelect: "none",
-    pointerEvents: "none",      // prevent right-click save
+    pointerEvents: "none",
     background: color.bgAccentLight,
   },
   refreshBtn: {
@@ -173,7 +174,7 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
         ) : (
           <img
             src={imageDataUri}
-            alt="CAPTCHA — type the characters shown"
+            alt="CAPTCHA image"
             style={styles.image}
             draggable="false"
           />

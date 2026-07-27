@@ -21,15 +21,6 @@ function EmailIcon() {
   );
 }
 
-/**
- * EmailVerification
- * Shown after registration. User enters the 6-digit activation OTP
- * sent to their email. Account is blocked from login until verified.
- *
- * Props:
- *   navigate  {(screen: string, state?: object) => void}
- *   email     {string}  — passed from Register so we know who to verify
- */
 export default function EmailVerification({ navigate, email }) {
   const [otp,          setOtp]          = useState("");
   const [serverError,  setServerError]  = useState("");
