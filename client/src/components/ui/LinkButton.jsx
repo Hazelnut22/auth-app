@@ -17,16 +17,6 @@ const styles = {
   },
 };
 
-/**
- * LinkButton
- * Looks like a hyperlink, acts like a button.
- * Used for in-form navigation (e.g. "Forgot password?", "Create account").
- *
- * Props:
- *   style    {object}     — additional inline styles
- *   children {ReactNode}
- *   All other props forwarded to <button>
- */
 export default function LinkButton({ style = {}, children, ...rest }) {
   return (
     <button

@@ -1,13 +1,14 @@
 import { useState } from "react";
-import AuthCard      from "../components/ui/AuthCard";
-import FormField     from "../components/ui/FormField";
+import AuthCard from "../components/ui/AuthCard";
+import FormField from "../components/ui/FormField";
 import PasswordInput from "../components/ui/PasswordInput";
-import Button        from "../components/ui/Button";
+import Button from "../components/ui/Button";
 import CaptchaWidget from "../components/ui/CaptchaWidget";
-import LinkButton    from "../components/ui/LinkButton";
-import Alert         from "../components/ui/Alert";
-import api           from "../api/axios.js";
-import tokens        from "../styles/tokens";
+import LinkButton from "../components/ui/LinkButton";
+import Alert from "../components/ui/Alert";
+import api from "../api/axios.js";
+import tokens from "../styles/tokens";
+import {toast} from "../components/ui/Toast.jsx"
 
 const { color, font } = tokens;
 
@@ -16,7 +17,6 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
   const [password,     setPassword]     = useState("");
   const [captcha,      setCaptcha]      = useState({ token: "", answer: "" });
   const [captchaError, setCaptchaError] = useState("");
-  const [serverError,  setServerError]  = useState("");
   const [loading,      setLoading]      = useState(false);
 
   const handleSubmit = async (e) => {
@@ -28,7 +28,6 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
     }
 
     setLoading(true);
-    setServerError("");
     setCaptchaError("");
 
     try {
@@ -46,9 +45,7 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
       }
 
     } catch (err) {
-      setServerError(
-        err.response?.data?.error ?? "Login failed. Please try again."
-      );
+      toast.error(err.response?.data?.error ?? "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -70,10 +67,6 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
       <form onSubmit={handleSubmit} noValidate>
 
         {successMessage && <Alert variant="success">{successMessage}</Alert>}
-        
-        {serverError && (
-          <Alert variant="error">{serverError}</Alert>
-        )}
 
         <FormField id="login-email" label="Email address">
           <input

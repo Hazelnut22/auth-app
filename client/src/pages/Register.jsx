@@ -6,10 +6,10 @@ import StrengthBar from "../components/ui/StrengthBar";
 import Button from "../components/ui/Button";
 import CaptchaWidget from "../components/ui/CaptchaWidget";
 import LinkButton from "../components/ui/LinkButton";
-import Alert from "../components/ui/Alert.jsx";
 import { usePasswordStrength } from "../hooks/user_password_strength.js";
 import tokens from "../styles/tokens";
 import api from "../api/axios.js";
+import {toast} from "../components/ui/Toast.jsx";
 
 const { color, font } = tokens;
 
@@ -21,7 +21,6 @@ export default function Register({ navigate }) {
   const [captcha, setCaptcha] = useState({ token: "", answer: "" });
   const [captchaError, setCaptchaError] = useState("");
   const [confirmError, setConfirmError] = useState("");
-  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const strength = usePasswordStrength(password);
@@ -39,7 +38,6 @@ export default function Register({ navigate }) {
     }
 
     setLoading(true);
-    setServerError("");
 
     try {
       await api.post("/app/auth/register", {
@@ -51,12 +49,11 @@ export default function Register({ navigate }) {
       });
 
       // Go to email verification — pass email so the OTP screen knows who to verify
+      toast.success("Account created! Check your email for a verification code.");
       navigate("verify-email", { email });
 
     } catch (err) {
-      setServerError(
-        err.response?.data?.error ?? "Registration failed. Please try again."
-      );
+      toast.error(err.response?.data?.error ?? "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -164,12 +161,6 @@ export default function Register({ navigate }) {
           onExpire={() => setCaptchaError("CAPTCHA expired. A new one has been loaded.")}
           error={captchaError}
         />
-
-        {serverError && (
-          <Alert variant="error" style={{ marginBottom: "12px" }}>
-            {serverError}
-          </Alert>
-        )}
 
         <Button type="submit">
           Create account

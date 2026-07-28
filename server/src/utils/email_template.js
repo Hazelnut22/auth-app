@@ -65,12 +65,9 @@ export const Verification_Email_Template = `
           <div class="header">Verify Your Email</div>
           <div class="content">
               <p>Hello,</p>
-              <p>Please confirm your email address by entering the code below:</p>
+              <p>Your OTP code is:</p>
               <span class="verification-code">{verificationCode}</span>
-              <p>If you did not create an account, no further action is required.</p>
-          </div>
-          <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Auth App. All rights reserved.</p>
+              <p>If you did not request it, no further action is required.</p>
           </div>
       </div>
   </body>

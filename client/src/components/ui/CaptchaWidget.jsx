@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { RefreshCw } from "lucide-react";
 import tokens from "../../styles/tokens";
 import api from "../../api/axios.js";
 
@@ -90,26 +91,6 @@ const styles = {
   },
 };
 
-// ── Refresh icon SVG ─────────────────────────────────────────────
-function RefreshIcon({ spinning }) {
-  return (
-    <svg
-      width="16" height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ transition: "transform 0.4s", transform: spinning ? "rotate(360deg)" : "none" }}
-      aria-hidden="true"
-    >
-      <polyline points="23 4 23 10 17 10" />
-      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-    </svg>
-  );
-}
-
 export default function CaptchaWidget({ onVerify, onExpire, error }) {
   const [imageDataUri, setImageDataUri] = useState(null);
   const [token, setToken] = useState("");
@@ -118,13 +99,13 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
   const [fetchError, setFetchError] = useState("");
   const [spinning, setSpinning] = useState(false);
 
-  // Fetch a fresh CAPTCHA challenge from the backend
+  // Get CAPTCHA from backend
   const fetchCaptcha = useCallback(async () => {
     setLoading(true);
     setFetchError("");
     setAnswer("");
     setSpinning(true);
-    onVerify?.({ token: "", answer: "" }); // clear parent state while refreshing
+    onVerify?.({ token: "", answer: "" });
 
     try {
       const res = await api.get("/app/auth/captcha");
@@ -139,22 +120,21 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
     }
   }, [onVerify]);
 
-  // Load on mount
+  // Load
   useEffect(() => {
     fetchCaptcha();
   }, [fetchCaptcha]);
 
-  // Auto-expire after 2 minutes — matches backend JWT expiry
+  // Auto-expire after 2 minutes
   useEffect(() => {
     if (!token) return;
     const timer = setTimeout(() => {
       onExpire?.();
-      fetchCaptcha(); // auto-refresh on expiry
+      fetchCaptcha();
     }, 2 * 60 * 1000);
     return () => clearTimeout(timer);
   }, [token, fetchCaptcha, onExpire]);
 
-  // Notify parent whenever token or answer changes
   const handleAnswerChange = (e) => {
     const value = e.target.value.replace(/[^A-Za-z0-9]/g, "");
     setAnswer(value);
@@ -167,7 +147,6 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
         Enter the characters shown below
       </label>
 
-      {/* Image + refresh row */}
       <div style={styles.imageRow}>
         {loading ? (
           <div style={styles.loadingBox}>Loading…</div>
@@ -196,11 +175,16 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
             e.currentTarget.style.color = color.textMuted;
           }}
         >
-          <RefreshIcon spinning={spinning} />
+          <RefreshCw
+            size={16}
+            style={{
+              transition: "transform 0.4s",
+              transform: spinning ? "rotate(360deg)" : "none"
+            }}
+          />
         </button>
       </div>
 
-      {/* Text input */}
       <input
         type="text"
         value={answer}
@@ -227,7 +211,6 @@ export default function CaptchaWidget({ onVerify, onExpire, error }) {
         }}
       />
 
-      {/* Error or hint */}
       {(error || fetchError) ? (
         <span role="alert" style={styles.error}>
           {error || fetchError}

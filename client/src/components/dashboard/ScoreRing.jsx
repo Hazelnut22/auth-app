@@ -19,21 +19,21 @@ export default function ScoreRing({ score, max }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
       <svg width="130" height="130" viewBox="0 0 130 130" aria-label={`Security score ${score} of ${max}`}>
-        {/* Track */}
+
         <circle cx="65" cy="65" r={r} fill="none"
           stroke={color.divider} strokeWidth="10" />
-        {/* Progress */}
+
         <circle cx="65" cy="65" r={r} fill="none"
           stroke={ringColor} strokeWidth="10"
           strokeDasharray={`${dash} ${circ}`}
           strokeLinecap="round"
-          style={{ 
+          style={{
             transition: "stroke-dasharray 0.6s ease, stroke 0.3s ease",
             transform: "rotate(-90deg)",
             transformOrigin: "50% 50%"
           }}
         />
-        {/* Score text */}
+
         <text x="65" y="60" textAnchor="middle" dominantBaseline="middle"
           style={{ fontSize: "28px", fontWeight: 700, fill: color.textPrimary, fontFamily: font.family }}>
           {score}/{max}

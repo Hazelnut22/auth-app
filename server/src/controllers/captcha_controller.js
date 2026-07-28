@@ -4,11 +4,11 @@ import crypto           from "crypto";
 import { JWT_SECRET } from "../config/env.js";
 
 const CAPTCHA_CONFIG = {
-  length:        6,
+  length: 6,
   expirySeconds: 120,
-  width:         220,
-  height:        70,
-  fontSize:      24,
+  width: 220,
+  height: 70,
+  fontSize: 24,
   chars: "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789",
 };
 
@@ -31,17 +31,17 @@ function generateCaptchaText() {
     .join("");
 }
 
-// ─── Canvas renderer ─────────────────────────────────────────────
+// Canvas renderer
 function renderCaptchaImage(text) {
   const { width, height, fontSize } = CAPTCHA_CONFIG;
   const canvas = createCanvas(width, height);
-  const ctx    = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
 
-  // ── Background ──────────────────────────────────────────────────
+  // Background
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
 
-  // ── Background noise dots ───────────────────────────────────────
+  // Background noise dots
   for (let i = 0; i < 300; i++) {
     ctx.beginPath();
     ctx.arc(
@@ -55,7 +55,7 @@ function renderCaptchaImage(text) {
     ctx.fill();
   }
 
-  // ── Distortion lines (sine wave) ────────────────────────────────
+  // Distortion lines
   for (let l = 0; l < 30; l++) {
     ctx.beginPath();
     ctx.strokeStyle = randomDarkColor(0.3);
@@ -70,7 +70,7 @@ function renderCaptchaImage(text) {
     ctx.stroke();
   }
 
-  // ── Characters ──────────────────────────────────────────────────
+  // Characters
   const charWidth  = width / (text.length + 1);
   ctx.font         = `bold ${fontSize}px 'Arial'`;
   ctx.textBaseline = "middle";
@@ -88,7 +88,7 @@ function renderCaptchaImage(text) {
     ctx.restore();
   });
 
-  // ── Foreground noise lines (over the text) ───────────────────────
+  // Foreground noise lines
   for (let l = 0; l < 20; l++) {
     ctx.beginPath();
     ctx.strokeStyle = randomDarkColor(0.15);
@@ -97,30 +97,30 @@ function renderCaptchaImage(text) {
     ctx.lineTo(Math.random() * width, Math.random() * height);
     ctx.stroke();
   }
-
-  return canvas.toDataURL("image/png"); // base64 PNG data URI
+  // base64 PNG data URI
+  return canvas.toDataURL("image/png");
 }
 
 function randomDarkColor(alpha) {
-  const r = Math.floor(Math.random() * 90);       // keep dark
+  const r = Math.floor(Math.random() * 90);
   const g = Math.floor(Math.random() * 90);
   const b = Math.floor(Math.random() * 90);
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-// ─── Public API ───────────────────────────────────────────────────
+// Generate captcha
 export function generateCaptcha() {
   purgeExpiredTokens();
 
   const text = generateCaptchaText();
-  const jti  = crypto.randomUUID(); // unique ID for this token — used for blacklisting
+  const jti  = crypto.randomUUID(); // unique ID
   console.log("Created jti for jwt id!");
 
   const token = jwt.sign(
     {
       answer:  text,
       purpose: "captcha",
-      jti,                         // JWT ID — lets us blacklist after single use
+      jti, // single use
     },
     JWT_SECRET,
     { expiresIn: `${CAPTCHA_CONFIG.expirySeconds}s` }
@@ -145,21 +145,18 @@ export function verifyCaptchaToken(token, answer) {
     };
   }
 
-  // Confirm this token was issued for CAPTCHA, not another purpose
   if (payload.purpose !== "captcha") {
     return { valid: false, reason: "Invalid CAPTCHA token." };
   }
 
-  // One-time-use check — reject if already submitted
+  // reject if already submitted
   if (usedTokens.has(payload.jti)) {
     return { valid: false, reason: "CAPTCHA already used. Please refresh." };
   }
 
-
-  // Forces the user to fetch a new CAPTCHA on failure.
   usedTokens.set(
     payload.jti,
-    (payload.exp ?? 0) * 1000 // store until the JWT's own expiry for GC purposes
+    (payload.exp ?? 0) * 1000
   );
 
   // Compare answer

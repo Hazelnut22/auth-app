@@ -1,4 +1,5 @@
 import tokens from "../../styles/tokens.js";
+import { Home, KeyRound, ShieldCheck, LogOut } from "lucide-react";
 
 const { color, font, space, radius, shadow } = tokens;
 
@@ -21,7 +22,7 @@ export default function Sidebar({ user, open, onClose, navigate, onLogout, navIt
             )}
 
             <aside style={{
-                 position: "fixed",
+                position: "fixed",
                 top: 0,
                 left: 0,
                 height: "100vh",
@@ -45,22 +46,6 @@ export default function Sidebar({ user, open, onClose, navigate, onLogout, navIt
                     padding: "28px 20px 20px",
                     borderBottom: `1px solid ${color.dark3}`,
                 }}>
-                    <div style={{
-                        width: "52px",
-                        height: "52px",
-                        borderRadius: "50%",
-                        background: `linear-gradient(135deg, ${color.cta}, ${color.accent})`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "20px",
-                        fontWeight: font.weightSemibold,
-                        color: "#fff",
-                        marginBottom: "12px",
-                        boxShadow: "0 2px 12px rgba(201,121,58,0.3)",
-                    }}>
-                        {initial}
-                    </div>
                     <p style={{
                         fontSize: font.sizeLg,
                         fontWeight: font.weightSemibold,
@@ -109,11 +94,7 @@ export default function Sidebar({ user, open, onClose, navigate, onLogout, navIt
                             onMouseEnter={(e) => e.currentTarget.style.background = color.dark3}
                             onMouseLeave={(e) => e.currentTarget.style.background = "none"}
                         >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                stroke={color.sideMuted} strokeWidth="2"
-                                strokeLinecap="round" strokeLinejoin="round">
-                                <path d={item.icon} />
-                            </svg>
+                            {item.icon}
                             {item.label}
                         </button>
                     ))}
@@ -157,11 +138,7 @@ export default function Sidebar({ user, open, onClose, navigate, onLogout, navIt
                         onMouseEnter={(e) => e.currentTarget.style.background = "rgba(229,115,115,0.1)"}
                         onMouseLeave={(e) => e.currentTarget.style.background = "none"}
                     >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="color.cta" strokeWidth="2"
-                            strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
-                        </svg>
+                        <LogOut size={16} color="#E57373" />
                         Sign out
                     </button>
                 </div>

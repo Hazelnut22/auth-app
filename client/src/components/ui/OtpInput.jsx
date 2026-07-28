@@ -5,43 +5,32 @@ const { color, font, radius } = tokens;
 
 const styles = {
   row: {
-    display:        "flex",
-    gap:            "10px",
+    display: "flex",
+    gap: "10px",
     justifyContent: "center",
-    margin:         "24px 0",
+    margin: "24px 0",
   },
   cell: {
-    width:        "48px",
-    height:       "54px",
-    textAlign:    "center",
-    fontSize:     "22px",
-    fontWeight:   font.weightSemibold,
-    border:       `1.5px solid ${color.border}`,
+    width: "48px",
+    height: "54px",
+    textAlign: "center",
+    fontSize: "22px",
+    fontWeight: font.weightSemibold,
+    border: `1.5px solid ${color.border}`,
     borderRadius: radius.lg,
-    color:        color.textPrimary,
-    background:   "#fff",
-    outline:      "none",
-    transition:   "border-color 0.15s, box-shadow 0.15s",
-    fontFamily:   font.family,
+    color: color.textPrimary,
+    background: "#fff",
+    outline: "none",
+    transition: "border-color 0.15s, box-shadow 0.15s",
+    fontFamily: font.family,
   },
 };
 
 const CELL_COUNT = 6;
 
-/**
- * OtpInput
- * Six individual digit cells with:
- *   - auto-advance on digit entry
- *   - backspace moves focus to previous cell
- *   - paste handling (pastes across all cells at once)
- *
- * Props:
- *   value     {string}               — current 6-char OTP string
- *   onChange  {(value: string)=>void}— called with the full OTP string on each change
- */
 export default function OtpInput({ value = "", onChange }) {
   const inputRefs = useRef([]);
-  const cells     = Array.from({ length: CELL_COUNT }, (_, i) => value[i] ?? "");
+  const cells = Array.from({ length: CELL_COUNT }, (_, i) => value[i] ?? "");
 
   const updateCell = (index, digit) => {
     const next = cells.map((c, i) => (i === index ? digit : c)).join("");

@@ -3,12 +3,12 @@ import AuthCard      from "../components/ui/AuthCard";
 import FormField     from "../components/ui/FormField";
 import PasswordInput from "../components/ui/PasswordInput";
 import StrengthBar   from "../components/ui/StrengthBar";
-import Alert         from "../components/ui/Alert";
 import Button        from "../components/ui/Button";
 import LinkButton    from "../components/ui/LinkButton";
 import { usePasswordStrength } from "../hooks/user_password_strength.js";
 import api    from "../api/axios.js";
 import tokens from "../styles/tokens";
+import {toast} from "../components/ui/Toast.jsx";
 
 const { color } = tokens;
 
@@ -16,8 +16,6 @@ export default function ChangePassword({ navigate }) {
   const [currentPw,   setCurrentPw]   = useState("");
   const [newPw,       setNewPw]       = useState("");
   const [confirmPw,   setConfirmPw]   = useState("");
-  const [serverError, setServerError] = useState("");
-  const [successMsg,  setSuccessMsg]  = useState("");
   const [loading,     setLoading]     = useState(false);
 
   const strength = usePasswordStrength(newPw);
@@ -26,28 +24,26 @@ export default function ChangePassword({ navigate }) {
     e.preventDefault();
 
     if (newPw !== confirmPw) {
-      setServerError("New passwords do not match.");
+      toast.error("New passwords do not match.");
       return;
     }
 
     setLoading(true);
-    setServerError("");
-    setSuccessMsg("");
 
     try {
       await api.post("/app/auth/password/change", {
         currentPassword: currentPw,
-        newPassword:     newPw,
+        newPassword: newPw,
       });
 
-      setSuccessMsg("Password changed successfully.");
+      toast.success("Password changed successfully.");
       // Clear form
       setCurrentPw("");
       setNewPw("");
       setConfirmPw("");
 
     } catch (err) {
-      setServerError(
+      toast.error(
         err.response?.data?.error ?? "Failed to change password. Please try again."
       );
     } finally {
@@ -66,15 +62,13 @@ export default function ChangePassword({ navigate }) {
       footer={footer}
     >
       <form onSubmit={handleSubmit} noValidate>
-        {serverError && <Alert variant="error">{serverError}</Alert>}
-        {successMsg  && <Alert variant="success">{successMsg}</Alert>}
 
         <FormField id="cp-current" label="Current password">
           <PasswordInput
             id="cp-current"
             placeholder="Your current password"
             value={currentPw}
-            onChange={(e) => { setCurrentPw(e.target.value); setServerError(""); }}
+            onChange={(e) => { setCurrentPw(e.target.value); }}
             autoComplete="current-password"
             required
           />
@@ -85,7 +79,7 @@ export default function ChangePassword({ navigate }) {
             id="cp-new"
             placeholder="Create a new strong password"
             value={newPw}
-            onChange={(e) => { setNewPw(e.target.value); setServerError(""); }}
+            onChange={(e) => { setNewPw(e.target.value); }}
             autoComplete="new-password"
             required
           />
@@ -97,7 +91,7 @@ export default function ChangePassword({ navigate }) {
             id="cp-confirm"
             placeholder="Repeat new password"
             value={confirmPw}
-            onChange={(e) => { setConfirmPw(e.target.value); setServerError(""); }}
+            onChange={(e) => { setConfirmPw(e.target.value); }}
             autoComplete="new-password"
             required
           />

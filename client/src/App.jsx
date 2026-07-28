@@ -136,7 +136,7 @@ export default function App() {
       <div className="auth-page">
         {renderScreen()}
         <p className="page-footer">
-          copyright @ maria
+          © 2026 Hsu Thansin Khine
         </p>
       </div>
     </ToastProvider>

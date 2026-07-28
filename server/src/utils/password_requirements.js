@@ -3,6 +3,8 @@ const PASSWORD_REQUIREMENTS = [
   { id: "uppercase", test: (pw) => /[A-Z]/.test(pw) },
   { id: "number",    test: (pw) => /[0-9]/.test(pw) },
   { id: "special",   test: (pw) => /[^A-Za-z0-9]/.test(pw) },
+  { id: "no-consecutive-repeats", test: (pw) => !/(.)\1{2,}/.test(pw) },
+  { id: "no-pattern-repeats", test: (pw) => !/(.{2,})\1+/.test(pw) },
 ];
 
 export function isPasswordValid(password) {

@@ -1,36 +1,23 @@
 import { useState, useEffect } from "react";
-import AuthCard   from "../components/ui/AuthCard";
-import OtpInput   from "../components/ui/OtpInput";
-import Alert      from "../components/ui/Alert";
-import Button     from "../components/ui/Button";
+import { MailCheck } from "lucide-react";
+import AuthCard from "../components/ui/AuthCard";
+import OtpInput from "../components/ui/OtpInput";
+import Button from "../components/ui/Button";
 import LinkButton from "../components/ui/LinkButton";
-import api        from "../api/axios.js";
-import tokens     from "../styles/tokens";
+import api from "../api/axios.js";
+import tokens from "../styles/tokens";
+import { toast } from "../components/ui/Toast.jsx";
 
 const { color, font } = tokens;
 
-/* ── Email icon ─────────────────────────────────────────────────── */
-function EmailIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-      stroke={color.accent} strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-      <polyline points="22,6 12,13 2,6"/>
-    </svg>
-  );
-}
-
 export default function EmailVerification({ navigate, email }) {
-  const [otp,          setOtp]          = useState("");
-  const [serverError,  setServerError]  = useState("");
-  const [successMsg,   setSuccessMsg]   = useState("");
-  const [loading,      setLoading]      = useState(false);
-  const [resending,    setResending]    = useState(false);
-  const [countdown,    setCountdown]    = useState(120); // 2-min TTL shown to user
-  const [canResend,    setCanResend]    = useState(false);
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [countdown, setCountdown] = useState(120); // 2-min
+  const [canResend, setCanResend] = useState(false);
 
-  // Countdown timer — matches the 2-minute server TTL
+  // Countdown timer (2mins)
   useEffect(() => {
     if (countdown <= 0) {
       setCanResend(true);
@@ -50,23 +37,21 @@ export default function EmailVerification({ navigate, email }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (otp.length < 6) {
-      setServerError("Please enter the full 6-digit code.");
+      toast.error("Please enter the full 6-digit code.");
       return;
     }
 
     setLoading(true);
-    setServerError("");
 
     try {
       await api.post("/app/auth/activate", { email, otp });
-      // Account activated — send to login with a success message
-      navigate("login", { message: "Email verified! You can now sign in." });
+      // Account verified
+      toast.success("Email verified! You can now sign in.");
+      navigate("login");
 
     } catch (err) {
-      setServerError(
-        err.response?.data?.error ?? "Verification failed. Please try again."
-      );
-      // Reset OTP input on failure so user starts fresh
+      toast.error(err.response?.data?.error ?? "Verification failed. Please try again.");
+      // Reset input on failure
       setOtp("");
     } finally {
       setLoading(false);
@@ -76,29 +61,24 @@ export default function EmailVerification({ navigate, email }) {
   // Resend a fresh OTP
   const handleResend = async () => {
     setResending(true);
-    setServerError("");
-    setSuccessMsg("");
 
     try {
       await api.post("/app/auth/activate/resend", { email });
-      setSuccessMsg("A new code has been sent to your email.");
-      setCountdown(120);   // reset timer
+      toast.success("A new code has been sent to your email.");
+      setCountdown(120);
       setCanResend(false);
       setOtp("");
     } catch (err) {
-      setServerError(
-        err.response?.data?.error ?? "Could not resend code. Please try again."
-      );
+      toast.error(err.response?.data?.error ?? "Could not resend code. Please try again.");
     } finally {
       setResending(false);
     }
   };
 
-  // Mask email for display — show j***@example.com
   const maskedEmail = email
     ? email.replace(/^(.)(.*)(@.*)$/, (_, first, middle, domain) =>
-        first + "*".repeat(Math.min(middle.length, 4)) + domain
-      )
+      first + "*".repeat(Math.min(middle.length, 4)) + domain
+    )
     : "your email";
 
   return (
@@ -106,34 +86,26 @@ export default function EmailVerification({ navigate, email }) {
       heading="Verify your email"
       subheading={`We sent a 6-digit code to ${maskedEmail}. Enter it below to activate your account.`}
     >
-      {/* Icon */}
       <div style={{
         width: "52px", height: "52px",
         background: color.bgAccentLight, borderRadius: "12px",
         display: "flex", alignItems: "center",
         justifyContent: "center", marginBottom: "18px",
       }}>
-        <EmailIcon />
+        <MailCheck size={26} color={color.accent} />
       </div>
 
       <form onSubmit={handleSubmit} noValidate>
-        {serverError && (
-          <Alert variant="error">{serverError}</Alert>
-        )}
-        {successMsg && (
-          <Alert variant="success">{successMsg}</Alert>
-        )}
 
         {/* 6-digit OTP input */}
         <OtpInput value={otp} onChange={setOtp} />
 
-        {/* Countdown + expiry notice */}
         <p style={{
-          textAlign:    "center",
-          fontSize:     font.sizeSm,
-          color:        countdown > 0 ? color.textMuted : color.error,
+          textAlign: "center",
+          fontSize: font.sizeSm,
+          color: countdown > 0 ? color.textMuted : color.error,
           marginBottom: "18px",
-          marginTop:    "-8px",
+          marginTop: "-8px",
         }}>
           {countdown > 0
             ? `Code expires in ${formatCountdown()}`

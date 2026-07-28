@@ -4,13 +4,13 @@ import FormField     from "../components/ui/FormField";
 import PasswordInput from "../components/ui/PasswordInput";
 import StrengthBar   from "../components/ui/StrengthBar";
 import OtpInput      from "../components/ui/OtpInput";
-import Alert         from "../components/ui/Alert";
 import Button        from "../components/ui/Button";
 import LinkButton    from "../components/ui/LinkButton";
 import { usePasswordStrength } from "../hooks/user_password_strength.js";
 import api    from "../api/axios.js";
 import tokens from "../styles/tokens";
 import StepIndicator from "../components/ui/StepIndicator.jsx";
+import {toast} from "../components/ui/Toast.jsx";
 
 const { color, font } = tokens;
 
@@ -22,14 +22,13 @@ export default function ForgetPassword({ navigate }) {
   const [otp,          setOtp]          = useState("");
   const [newPassword,  setNewPassword]  = useState("");
   const [confirmPw,    setConfirmPw]    = useState("");
-  const [serverError,  setServerError]  = useState("");
   const [loading,      setLoading]      = useState(false);
   const [countdown,    setCountdown]    = useState(0);
   const [canResend,    setCanResend]    = useState(false);
 
   const strength = usePasswordStrength(newPassword);
 
-  // Countdown timer for step 2
+  // Countdown timer
   useEffect(() => {
     if (step !== 2 || countdown <= 0) {
       if (step === 2 && countdown <= 0) setCanResend(true);
@@ -45,39 +44,36 @@ export default function ForgetPassword({ navigate }) {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  const clearError = () => setServerError("");
-
-  // ── Step 1 — send OTP ──────────────────────────────────────────
+  // send OTP first to email
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
-    clearError();
     try {
       await api.post("/app/auth/password/forgot", { email });
+      toast.success("Reset code sent to your email.");
       setStep(2);
-      setCountdown(120); // 2-min countdown
+      setCountdown(120); // 2-min expire
       setCanResend(false);
     } catch (err) {
-      setServerError(err.response?.data?.error ?? "Failed to send code. Please try again.");
+      toast.error(err.response?.data?.error ?? "Failed to send code. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ── Step 2 — verify OTP ────────────────────────────────────────
+  // verify OTP code
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     if (otp.length < 6) {
-      setServerError("Please enter the full 6-digit code.");
+      toast.error("Please enter the full 6-digit code.");
       return;
     }
     setLoading(true);
-    clearError();
     try {
       await api.post("/app/auth/password/verify", { email, otp });
       setStep(3);
     } catch (err) {
-      setServerError(err.response?.data?.error ?? "Verification failed. Please try again.");
+      toast.error(err.response?.data?.error ?? "Verification failed. Please try again.");
       setOtp("");
     } finally {
       setLoading(false);
@@ -87,34 +83,33 @@ export default function ForgetPassword({ navigate }) {
   // Resend OTP
   const handleResend = async () => {
     setLoading(true);
-    clearError();
     setOtp("");
     try {
       await api.post("/app/auth/password/forgot", { email });
       setCountdown(120);
       setCanResend(false);
     } catch (err) {
-      setServerError(err.response?.data?.error ?? "Failed to resend code.");
+      toast.error(err.response?.data?.error ?? "Failed to resend code.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ── Step 3 — reset password ────────────────────────────────────
+  // reset password only when verified
   const handleReset = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPw) {
-      setServerError("Passwords do not match.");
+      toast.error("Passwords do not match.");
       return;
     }
     setLoading(true);
     clearError();
     try {
       await api.post("/app/auth/password/reset", { newPassword });
-      // Success — back to login with message
-      navigate("login", { message: "Password reset successfully. You can now sign in." });
+      toast.success("Password reset successfully. You can now sign in.");
+      navigate("login");
     } catch (err) {
-      setServerError(err.response?.data?.error ?? "Failed to reset password. Please try again.");
+      toast.error(err.response?.data?.error ?? "Failed to reset password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -124,7 +119,6 @@ export default function ForgetPassword({ navigate }) {
     <LinkButton onClick={() => navigate("login")}>← Back to sign in</LinkButton>
   );
 
-  // ── Step 1 UI ──────────────────────────────────────────────────
   if (step === 1) {
     return (
       <AuthCard
@@ -133,7 +127,6 @@ export default function ForgetPassword({ navigate }) {
         footer={footer}
       >
         <form onSubmit={handleSendOtp} noValidate>
-          {serverError && <Alert variant="error">{serverError}</Alert>}
 
           <FormField id="forgot-email" label="Email address">
             <input
@@ -169,7 +162,7 @@ export default function ForgetPassword({ navigate }) {
     );
   }
 
-  // ── Step 2 UI — reuses OtpInput (same as EmailVerification) ───
+  // OtpInput
   if (step === 2) {
     const maskedEmail = email.replace(/^(.)(.*)(@.*)$/, (_, f, m, d) =>
       f + "*".repeat(Math.min(m.length, 4)) + d
@@ -184,9 +177,7 @@ export default function ForgetPassword({ navigate }) {
         <StepIndicator current={2} steps={steps} />
 
         <form onSubmit={handleVerifyOtp} noValidate>
-          {serverError && <Alert variant="error">{serverError}</Alert>}
 
-          {/* Reusing OtpInput — same component as email activation */}
           <OtpInput value={otp} onChange={setOtp} />
 
           {/* Countdown */}
@@ -222,7 +213,7 @@ export default function ForgetPassword({ navigate }) {
     );
   }
 
-  // ── Step 3 UI — new password ───────────────────────────────────
+  // reset password
   return (
     <AuthCard
       heading="Set new password"
@@ -232,7 +223,6 @@ export default function ForgetPassword({ navigate }) {
       <StepIndicator current={3} steps={steps}  />
 
       <form onSubmit={handleReset} noValidate>
-        {serverError && <Alert variant="error">{serverError}</Alert>}
 
         <FormField id="reset-pw" label="New password">
           <PasswordInput

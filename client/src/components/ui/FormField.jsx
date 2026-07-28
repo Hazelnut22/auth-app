@@ -50,19 +50,6 @@ const styles = {
   },
 };
 
-/**
- * FormField
- * Accessible label + input + optional hint/error message.
- *
- * Props:
- *   id          {string}   — links label to input via htmlFor
- *   label       {string}
- *   error       {string}   — shown below input in error colour when set
- *   hint        {string}   — shown below input in muted colour when set
- *   children    {ReactNode}— slot for a custom input (e.g. PasswordInput)
- *                            if omitted, renders a plain <input>
- *   All other props are spread onto the <input> when no children provided.
- */
 export default function FormField({ id, label, error, hint, children, ...inputProps }) {
   return (
     <div style={styles.wrapper}>

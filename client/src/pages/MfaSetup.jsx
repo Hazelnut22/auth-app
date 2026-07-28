@@ -1,62 +1,78 @@
 import { useState, useEffect } from "react";
 import AuthCard  from "../components/ui/AuthCard";
 import OtpInput  from "../components/ui/OtpInput";
-import Alert     from "../components/ui/Alert";
 import Button    from "../components/ui/Button";
 import LinkButton from "../components/ui/LinkButton";
 import api       from "../api/axios.js";
 import tokens    from "../styles/tokens";
 import StepIndicator from "../components/ui/StepIndicator.jsx";
+import {toast} from "../components/ui/Toast.jsx";
 
 const { color, font, radius } = tokens;
 
 const steps = ["Get QR code", "Scan & save", "Confirm code"];
 
 export default function MFASetup({ navigate }) {
-  const [step,        setStep]        = useState(1);
+  const [step,        setStep]        = useState("checking");
   const [qrCode,      setQrCode]      = useState("");
   const [secret,      setSecret]      = useState("");
   const [otp,         setOtp]         = useState("");
-  const [serverError, setServerError] = useState("");
   const [loading,     setLoading]     = useState(false);
 
-  // Step 1 — fetch QR code from backend on mount
+  // On mount — check current MFA status before deciding what to show
   useEffect(() => {
-    const setup = async () => {
-      setLoading(true);
+    const checkStatus = async () => {
       try {
-        const res = await api.post("/app/auth/2fa/setup");
-        setQrCode(res.data.data.qrCode);
-        setSecret(res.data.data.secret);
-        setStep(2);
+        const res = await api.get("/app/auth/status");
+        if (res.data.data.user.isMfaActive) {
+          setStep("enabled");
+        } else {
+          startSetup();
+        }
       } catch (err) {
-        setServerError(
-          err.response?.data?.error ?? "Failed to generate QR code. Please try again."
+        toast.error(
+          err.response?.data?.error ?? "Failed to load MFA status. Please try again."
         );
-      } finally {
-        setLoading(false);
+        setStep(1);
       }
     };
-    setup();
+    checkStatus();
   }, []);
 
-  // Step 3 — verify the code user entered after scanning
+  // only called when MFA is NOT already active)
+  const startSetup = async () => {
+    setStep(1);
+    setLoading(true);
+    try {
+      const res = await api.post("/app/auth/2fa/setup");
+      setQrCode(res.data.data.qrCode);
+      setSecret(res.data.data.secret);
+      setStep(2);
+    } catch (err) {
+      toast.error(
+        err.response?.data?.error ?? "Failed to generate QR code. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // verify the code user entered after scanning
   const handleVerify = async (e) => {
     e.preventDefault();
     if (otp.length < 6) {
-      setServerError("Please enter the full 6-digit code.");
+      toast.error("Please enter the full 6-digit code.");
       return;
     }
 
     setLoading(true);
-    setServerError("");
 
     try {
       await api.post("/app/auth/2fa/verify", { token: otp });
-      // MFA is now active — go back to dashboard
+      toast.success("Two-factor authentication enabled.");
       navigate("dashboard");
     } catch (err) {
-      setServerError(
+      toast.error(
         err.response?.data?.error ?? "Invalid code. Please try again."
       );
       setOtp("");
@@ -65,6 +81,122 @@ export default function MFASetup({ navigate }) {
     }
   };
 
+  //  user enters current OTP to prove they still control the device
+  const handleDisable = async (e) => {
+    e.preventDefault();
+    if (otp.length < 6) {
+      toast.error("Please enter the full 6-digit code.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await api.post("/app/auth/2fa/reset");
+      toast.success("Two-factor authentication disabled.");
+      navigate("dashboard");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.error ?? "Invalid code. Please try again."
+      );
+      setOtp("");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Checking status ─────────────────────────────────────────────
+  if (step === "checking") {
+    return (
+      <AuthCard heading="Two-factor auth" subheading="Checking your account…">
+        <div style={{
+          display: "flex", justifyContent: "center", alignItems: "center",
+          height: "120px", color: color.textMuted, fontSize: font.sizeMd,
+        }}>
+          Loading…
+        </div>
+      </AuthCard>
+    );
+  }
+
+  // ── MFA already enabled — manage / disable ──────────────────────
+  if (step === "enabled") {
+    return (
+      <AuthCard
+        heading="Two-factor auth"
+        subheading="Two-factor authentication is currently enabled on your account."
+      >
+
+        <div style={{
+          background:   color.bgAccentLight,
+          border:       `1.5px solid ${color.border}`,
+          borderRadius: radius.md,
+          padding:      "14px 16px",
+          marginBottom: "20px",
+          display:      "flex",
+          alignItems:   "center",
+          gap:          "10px",
+        }}>
+          <span style={{ fontSize: font.sizeMd, color: color.textPrimary, fontWeight: font.weightMedium }}>
+            Multi-factor auth is active
+          </span>
+        </div>
+
+        <p style={{ fontSize: font.sizeSm, color: color.textSecondary, marginBottom: "20px" }}>
+          If you disable this, your account will only be protected by your password.
+        </p>
+
+        <Button
+          variant="primary"
+          onClick={() => { setStep("disable-confirm"); setOtp(""); }}
+        >
+          Disable MFA
+        </Button>
+
+        <div style={{ textAlign: "center", marginTop: "16px" }}>
+          <LinkButton
+            style={{ fontSize: font.sizeMd, color: color.textMuted, fontWeight: 500 }}
+            onClick={() => navigate("dashboard")}
+          >
+            ← Back to dashboard
+          </LinkButton>
+        </div>
+      </AuthCard>
+    );
+  }
+
+  // ── Confirm disable — require current OTP ───────────────────────
+  if (step === "disable-confirm") {
+    return (
+      <AuthCard
+        heading="Disable two-factor auth"
+        subheading="Enter the 6-digit code from your authenticator app to confirm."
+      >
+        <form onSubmit={handleDisable} noValidate>
+
+          <OtpInput value={otp} onChange={setOtp} />
+
+          <Button
+            type="submit"
+            variant="danger"
+            disabled={loading}
+            style={{ marginBottom: "8px" }}
+          >
+            {loading ? "Disabling…" : "Confirm disable"}
+          </Button>
+
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={() => { setStep("enabled"); setOtp(""); }}
+          >
+            ← Cancel
+          </Button>
+        </form>
+      </AuthCard>
+    );
+  }
+
   // ── Step 1 — Loading QR ────────────────────────────────────────
   if (step === 1) {
     return (
@@ -72,9 +204,8 @@ export default function MFASetup({ navigate }) {
         heading="Set up two-factor auth"
         subheading="Generating your QR code…"
       >
-        {serverError && <Alert variant="error">{serverError}</Alert>}
 
-        {!serverError && (
+        {(
           <div style={{
             display:        "flex",
             justifyContent: "center",
@@ -87,7 +218,7 @@ export default function MFASetup({ navigate }) {
           </div>
         )}
 
-        {serverError && (
+        {(
           <Button onClick={() => window.location.reload()}>
             Try again
           </Button>
@@ -114,9 +245,6 @@ export default function MFASetup({ navigate }) {
       >
         <StepIndicator current={2} steps={steps} />
 
-        {serverError && <Alert variant="error">{serverError}</Alert>}
-
-        {/* QR code image */}
         <div style={{
           display:        "flex",
           justifyContent: "center",
@@ -136,7 +264,6 @@ export default function MFASetup({ navigate }) {
           />
         </div>
 
-        {/* Manual entry fallback */}
         <div style={{
           background:   color.bgAccentLight,
           border:       `1.5px solid ${color.border}`,
@@ -159,13 +286,12 @@ export default function MFASetup({ navigate }) {
           </p>
         </div>
 
-        {/* Recommended apps */}
         <p style={{ fontSize: font.sizeSm, color: color.textMuted, marginBottom: "20px" }}>
           Works with <strong>Google Authenticator</strong>, <strong>Authy</strong>,
           or <strong>Microsoft Authenticator</strong>.
         </p>
 
-        <Button onClick={() => { setStep(3); setServerError(""); }}>
+        <Button onClick={() => { setStep(3); }}>
           Continue
         </Button>
 
@@ -190,7 +316,6 @@ export default function MFASetup({ navigate }) {
       <StepIndicator current={3} steps={steps} />
 
       <form onSubmit={handleVerify} noValidate>
-        {serverError && <Alert variant="error">{serverError}</Alert>}
 
         <OtpInput value={otp} onChange={setOtp} />
 
@@ -201,7 +326,7 @@ export default function MFASetup({ navigate }) {
         <Button
           variant="ghost"
           type="button"
-          onClick={() => { setStep(2); setServerError(""); setOtp(""); }}
+          onClick={() => { setStep(2); setOtp(""); }}
         >
           ← Back to QR code
         </Button>
