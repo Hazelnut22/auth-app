@@ -28,11 +28,10 @@ const ARGON2 = {
 const cookieBase = () => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "Strict",
+  sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict",
 });
 
 // Shared helpers
-
 function issueSessionCookies(res, userId) {
   const accessToken = jwt.sign(
     { sub: userId, purpose: "access" },
