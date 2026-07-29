@@ -309,12 +309,12 @@ export const forgetPassword = catch_async(async (req, res) => {
   const user = await User.findOne({ email: email.toLowerCase().trim() });
 
   if (!user || !user.isVerified) {
-    return sendSuccess(res, "If that email is registered, a reset code has been sent.");
+    return sendError(res, "User is not registered with this email", 401);
   }
 
   await sendOtpToUser(user, "passwordResetOtp", "passwordResetExpiry");
 
-  return sendSuccess(res, "If that email is registered, a reset code has been sent.");
+  return sendSuccess(res, "A reset code has been sent to your email.");
 });
 
 // Verify email otp

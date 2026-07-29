@@ -3,6 +3,7 @@ import { Verification_Email_Template } from "../utils/email_template.js";
 
 export const sendVerificationCode = async (email, verificationCode) => {
     try {
+        console.log("Email Sending OTP to", email);
         const response = await transporter.sendMail({
             from: '"Auth App Team" <mmckhine5@gmail.com>',
             to: email,

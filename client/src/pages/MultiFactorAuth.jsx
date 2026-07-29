@@ -1,23 +1,23 @@
 import { useState } from "react";
 import { Lock, Mail } from "lucide-react";
-import AuthCard   from "../components/ui/AuthCard";
-import OtpInput   from "../components/ui/OtpInput";
-import FormField  from "../components/ui/FormField";
-import Button     from "../components/ui/Button";
+import AuthCard from "../components/ui/AuthCard";
+import OtpInput from "../components/ui/OtpInput";
+import FormField from "../components/ui/FormField";
+import Button from "../components/ui/Button";
 import LinkButton from "../components/ui/LinkButton";
-import api        from "../api/axios.js";
-import tokens     from "../styles/tokens";
-import {toast} from "../components/ui/Toast.jsx";
+import api from "../api/axios.js";
+import tokens from "../styles/tokens";
+import { toast } from "../components/ui/Toast.jsx";
 
 const { color, font } = tokens;
 
 export default function MFA({ navigate, onLoginSuccess }) {
-  const [mode,        setMode]        = useState("totp");
-  const [otp,         setOtp]         = useState("");
-  const [emailOtp,    setEmailOtp]    = useState("");
-  const [backup,      setBackup]      = useState("");
-  const [loading,     setLoading]     = useState(false);
-  const [emailSent,   setEmailSent]   = useState(false);
+  const [mode, setMode] = useState("totp");
+  const [otp, setOtp] = useState("");
+  const [emailOtp, setEmailOtp] = useState("");
+  const [backup, setBackup] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   // clear all state when switch
   const switchMode = (next) => {
@@ -69,21 +69,21 @@ export default function MFA({ navigate, onLoginSuccess }) {
   };
 
   const headingMap = {
-    totp:   "Two-factor verification",
-    email:  "Email verification",
+    totp: "Two-factor verification",
+    email: "Email verification",
     backup: "Backup code",
   };
 
   const subheadingMap = {
-    totp:   "Enter the 6-digit code from your authenticator app. It rotate every 30 seconds.",
-    email:  emailSent
+    totp: "Enter the 6-digit code from your authenticator app. It rotate every 30 seconds.",
+    email: emailSent
       ? "Enter the 6-digit code sent to your email"
       : "We'll send a one-time code to your email",
   };
 
   const iconMap = {
-    totp:   <Lock  size={26} color={color.accent} />,
-    email:  <Mail  size={26} color={color.accent} />,
+    totp: <Lock size={26} color={color.accent} />,
+    email: <Mail size={26} color={color.accent} />,
   };
 
   return (
@@ -92,10 +92,16 @@ export default function MFA({ navigate, onLoginSuccess }) {
       subheading={subheadingMap[mode]}
     >
       <div style={{
-        width: "52px", height: "52px",
-        background: color.bgAccentLight, borderRadius: "12px",
-        display: "flex", alignItems: "center",
-        justifyContent: "center", marginBottom: "18px",
+        width: "52px",
+        height: "52px",
+        background: color.bgAccentLight,
+        borderRadius: "12px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: "18px",
+        marginLeft: "auto",
+        marginRight: "auto",
       }}>
         {iconMap[mode]}
       </div>
@@ -136,10 +142,10 @@ export default function MFA({ navigate, onLoginSuccess }) {
         )}
 
         <div style={{
-          display:       "flex",
+          display: "flex",
           flexDirection: "column",
-          gap:           "8px",
-          marginTop:     mode === "email" && !emailSent ? "0" : "4px",
+          gap: "8px",
+          marginTop: mode === "email" && !emailSent ? "0" : "4px",
         }}>
           {mode !== "totp" && (
             <Button variant="ghost" type="button" onClick={() => switchMode("totp")}>
