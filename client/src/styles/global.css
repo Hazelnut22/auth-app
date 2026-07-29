@@ -1,4 +1,3 @@
-/* ─── Reset ──────────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -7,7 +6,6 @@
   padding: 0;
 }
 
-/* ─── Base ───────────────────────────────────────────────────────── */
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
@@ -23,7 +21,7 @@ body {
   min-height: 100vh;
 }
 
-/* ─── Autofill override ──────────────────────────────────────────── */
+/* Auto fill */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
@@ -32,7 +30,7 @@ input:-webkit-autofill:focus {
   transition: background-color 9999s ease-in-out 0s;
 }
 
-/* ─── Page layout ───────────────────────────────────────────────── */
+/* Main page layout */
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -42,7 +40,7 @@ input:-webkit-autofill:focus {
   padding: 32px 16px;
 }
 
-/* ─── Page footer ───────────────────────────────────────────────── */
+/* footer */
 .page-footer {
   margin-top: 24px;
   font-size: 11px;
@@ -51,13 +49,12 @@ input:-webkit-autofill:focus {
   letter-spacing: 0.1px;
 }
 
-/* ─── Focus visible (keyboard nav) ──────────────────────────────── */
+/* keyboard visible */
 :focus-visible {
   outline: 2px solid #C9793A;
   outline-offset: 2px;
 }
 
-/* ─── Reduced motion ─────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
 
   *,

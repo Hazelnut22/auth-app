@@ -1,5 +1,5 @@
 const tokens = {
-  // ── Palette ──────────────────────────────────────────────────────
+  // Color codes
   color: {
     bgPage: "#F2EBE0",
     bgCard: "#FFFFFF",
@@ -42,7 +42,7 @@ const tokens = {
     sideMuted: "#9A8878",
   },
 
-  // ── Typography ───────────────────────────────────────────────────
+  // fonts
   font: {
     family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
     sizeXs: "11px",
@@ -55,7 +55,7 @@ const tokens = {
     weightSemibold: 600,
   },
 
-  // ── Spacing ──────────────────────────────────────────────────────
+  // spacing
   space: {
     xs: "4px",
     sm: "8px",
@@ -66,7 +66,7 @@ const tokens = {
     sideBar: "240px",
   },
 
-  // ── Shape ────────────────────────────────────────────────────────
+  // size shape
   radius: {
     sm: "4px",
     md: "6px",
@@ -75,19 +75,19 @@ const tokens = {
     pill: "20px",
   },
 
-  // ── Shadow ───────────────────────────────────────────────────────
+  // shadow
   shadow: {
     card: "0 2px 6px rgba(44,36,22,0.07), 0 8px 28px rgba(44,36,22,0.08)",
   },
 
-  // ── Transitions ──────────────────────────────────────────────────
+  // transition
   transition: {
     fast: "0.15s ease",
     normal: "0.2s ease",
     slow: "0.3s ease",
   },
 
-  // ── Layout ───────────────────────────────────────────────────────
+  // card layout
   layout: {
     cardMaxWidth: "420px",
     cardPadding: "40px",
