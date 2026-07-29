@@ -11,11 +11,12 @@ import ForgetPassword from "./pages/ForgetPassword";
 import api from "./api/axios";
 import ChangePassword from "./pages/ChangePassword";
 import { ToastProvider } from "./components/ui/Toast";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const { color, font } = tokens;
 
 // Screens that are only for unauthenticated users
-const AUTH_SCREENS = ["login", "register", "mfa", "forgot-password", "verify-email"];
+const AUTH_SCREENS = ["login", "register", "mfa", "forgot-password", "verify-email", "privacy-policy"];
 
 export default function App() {
   const [screen, setScreen] = useState("login");
@@ -46,10 +47,9 @@ export default function App() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: color.bgPage,
         fontFamily: "-apple-system, sans-serif",
         fontSize: "14px",
-        color: color.textMuted,
+        color: color.textPrimary,
       }}>
         Loading…
       </div>
@@ -125,6 +125,9 @@ export default function App() {
 
       case "mfa-setup":
         return <MFASetup navigate={navigate} />;
+
+      case "privacy-policy":
+        return <PrivacyPolicy navigate={navigate} />;
 
       default:
         return <Login {...commonProps} />;

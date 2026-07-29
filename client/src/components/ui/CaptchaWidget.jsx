@@ -7,7 +7,7 @@ const { color, font, radius } = tokens;
 
 const styles = {
   wrapper: {
-    marginBottom: "18px",
+    marginBottom: "2px",
   },
   label: {
     display: "block",

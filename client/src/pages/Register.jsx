@@ -165,6 +165,17 @@ export default function Register({ navigate }) {
         <Button type="submit">
           Create account
         </Button>
+
+        <div style={{
+          textAlign: "center",
+          fontSize: tokens.font.sizeSm,
+          color: color.textSecondary,
+          marginBottom: "4px",
+        }}
+        >
+          By clicking this, you have agreed to our{" "}
+          <LinkButton onClick={() => navigate("privacy-policy")}>privacy policy</LinkButton>
+        </div>
       </form>
     </AuthCard>
   );

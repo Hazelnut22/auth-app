@@ -8,16 +8,16 @@ import LinkButton from "../components/ui/LinkButton";
 import Alert from "../components/ui/Alert";
 import api from "../api/axios.js";
 import tokens from "../styles/tokens";
-import {toast} from "../components/ui/Toast.jsx"
+import { toast } from "../components/ui/Toast.jsx"
 
 const { color, font } = tokens;
 
 export default function Login({ navigate, onLoginSuccess, successMessage }) {
-  const [email,        setEmail]        = useState("");
-  const [password,     setPassword]     = useState("");
-  const [captcha,      setCaptcha]      = useState({ token: "", answer: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [captcha, setCaptcha] = useState({ token: "", answer: "" });
   const [captchaError, setCaptchaError] = useState("");
-  const [loading,      setLoading]      = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,7 +34,7 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
       const res = await api.post("/app/auth/login", {
         email,
         password,
-        captchaToken:  captcha.token,
+        captchaToken: captcha.token,
         captchaAnswer: captcha.answer,
       });
 
@@ -85,11 +85,11 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
             }}
             onFocus={(e) => {
               e.target.style.borderColor = color.borderFocus;
-              e.target.style.boxShadow   = "0 0 0 3px rgba(201,121,58,0.12)";
+              e.target.style.boxShadow = "0 0 0 3px rgba(201,121,58,0.12)";
             }}
             onBlur={(e) => {
               e.target.style.borderColor = color.border;
-              e.target.style.boxShadow   = "none";
+              e.target.style.boxShadow = "none";
             }}
           />
         </FormField>
@@ -126,6 +126,17 @@ export default function Login({ navigate, onLoginSuccess, successMessage }) {
         <Button type="submit" disabled={loading}>
           {loading ? "Signing in…" : "Sign in"}
         </Button>
+
+        <div style={{
+          textAlign: "center",
+          fontSize: tokens.font.sizeSm,
+          color: color.textSecondary,
+          marginBottom: "4px",
+        }}
+        >
+          By clicking this, you have agreed to our{" "}
+          <LinkButton onClick={() => navigate("privacy-policy")}>privacy policy</LinkButton>
+        </div>
 
       </form>
     </AuthCard>
