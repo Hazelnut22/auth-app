@@ -7,6 +7,9 @@ import dbConnect from "./config/db_connect.js";
 import authRoutes from "./routes/auth_routes.js";
 import { globalLimiter } from "./middleware/rate_limiter.js";
 import globalErrorHandler from "./controllers/error_controller.js";
+import dns from 'dns';
+
+dns.setDefaultResultOrder('ipv4first');
 
 dotenv.config();
 dbConnect();
