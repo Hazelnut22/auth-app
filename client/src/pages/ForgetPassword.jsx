@@ -103,7 +103,6 @@ export default function ForgetPassword({ navigate }) {
       return;
     }
     setLoading(true);
-    clearError();
     try {
       await api.post("/app/auth/password/reset", { newPassword });
       toast.success("Password reset successfully. You can now sign in.");
@@ -134,7 +133,7 @@ export default function ForgetPassword({ navigate }) {
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); clearError(); }}
+              onChange={(e) => { setEmail(e.target.value); }}
               autoComplete="email"
               required
               style={{
@@ -204,7 +203,7 @@ export default function ForgetPassword({ navigate }) {
               </LinkButton>
             ) : (
               <span style={{ fontSize: font.sizeSm, color: color.textMuted }}>
-                Resend available in {formatCountdown()}
+                Resend in {formatCountdown()}
               </span>
             )}
           </div>
@@ -229,7 +228,7 @@ export default function ForgetPassword({ navigate }) {
             id="reset-pw"
             placeholder="Create a strong password"
             value={newPassword}
-            onChange={(e) => { setNewPassword(e.target.value); clearError(); }}
+            onChange={(e) => { setNewPassword(e.target.value); }}
             autoComplete="new-password"
             required
           />
@@ -241,7 +240,7 @@ export default function ForgetPassword({ navigate }) {
             id="reset-confirm"
             placeholder="Repeat new password"
             value={confirmPw}
-            onChange={(e) => { setConfirmPw(e.target.value); clearError(); }}
+            onChange={(e) => { setConfirmPw(e.target.value); }}
             autoComplete="new-password"
             required
           />

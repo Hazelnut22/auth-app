@@ -13,10 +13,9 @@ dbConnect();
 
 const app = express();
 
-
 // Middleware
 const corsOptions = {
-    origin: [process.env.FRONTEND_ORIGIN || "http://localhost:5173"],
+    origin: [process.env.FRONTEND_ORIGIN],
     credentials: true
 }
 app.use(cors(corsOptions));

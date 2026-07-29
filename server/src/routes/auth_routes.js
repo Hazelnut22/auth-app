@@ -150,7 +150,6 @@ router.post("/2fa/email/verify",
     [
         body("otp").notEmpty().isLength({ min: 6, max: 6 }).withMessage("Enter the 6-digit code."),
     ],
-    validate,
     verifyEmailOtp
 );
 
