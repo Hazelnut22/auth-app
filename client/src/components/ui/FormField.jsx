@@ -84,7 +84,7 @@ export default function FormField({ id, label, error, hint, children, ...inputPr
 
       {error && (
         <span id={`${id}-error`} role="alert" style={styles.error}>
-          {error}
+          {typeof error === "object" ? error.message || "CAPTCHA verification failed" : String(error)}
         </span>
       )}
 

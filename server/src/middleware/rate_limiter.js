@@ -10,7 +10,7 @@ export const globalLimiter = rateLimit({
 
 export const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,    // 1 hour
-  max:  5,
+  max: 15,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many registration attempts. Please try again later." },

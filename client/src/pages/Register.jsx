@@ -9,7 +9,7 @@ import LinkButton from "../components/ui/LinkButton";
 import { usePasswordStrength } from "../hooks/user_password_strength.js";
 import tokens from "../styles/tokens";
 import api from "../api/axios.js";
-import {toast} from "../components/ui/Toast.jsx";
+import { toast } from "../components/ui/Toast.jsx";
 
 const { color, font } = tokens;
 
@@ -53,7 +53,13 @@ export default function Register({ navigate }) {
       navigate("verify-email", { email });
 
     } catch (err) {
-      toast.error(err.response?.data?.error ?? "Registration failed. Please try again.");
+      const rawError = err.response?.data?.error || err.response?.data?.message;
+      const errorMessage =
+        typeof rawError === "string"
+          ? rawError
+          : rawError?.message || "Registration failed. Please try again.";
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

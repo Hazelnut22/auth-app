@@ -203,7 +203,7 @@ export const login = catch_async(async (req, res) => {
 
   // Lockout check
   if (user?.lockedUntil && new Date() < new Date(user.lockedUntil)) {
-    return sendError(res, "Invalid credentials.", 401);
+    return sendError(res, "Too many failed attempts and account locked.", 401);
   }
 
   // password check
@@ -282,14 +282,14 @@ export const status = catch_async(async (req, res) => {
 
   return sendSuccess(res, "Status retrieved.", {
     user: {
-      id:             user._id,
-      username:       user.username,
-      email:          user.email,
-      isMfaActive:    user.isMfaActive,
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      isMfaActive: user.isMfaActive,
       passwordExpired,
       daysUntilExpiry,
-      memberSince:    user.createdAt,
-      lastLoginAt:    user.lastLoginAt,
+      memberSince: user.createdAt,
+      lastLoginAt: user.lastLoginAt,
     },
     recentActivity,
   });

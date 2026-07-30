@@ -91,6 +91,8 @@ export default function EmailVerification({ navigate, email }) {
         background: color.bgAccentLight, borderRadius: "12px",
         display: "flex", alignItems: "center",
         justifyContent: "center", marginBottom: "18px",
+        marginLeft: "auto",
+        marginRight: "auto",
       }}>
         <MailCheck size={26} color={color.accent} />
       </div>
