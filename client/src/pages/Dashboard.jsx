@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../api/axios.js";
 import tokens from "../styles/tokens";
-import { Home, KeyRound, ShieldCheck, LogOut, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
+import { Home, KeyRound, ShieldCheck, LogOut, } from "lucide-react";
 import ScoreRing from "../components/dashboard/ScoreRing.jsx";
 import Sidebar from "../components/dashboard/SideBar.jsx";
 import Button from "../components/ui/Button.jsx";
@@ -232,33 +232,13 @@ export default function Dashboard({ navigate, onLogout }) {
                   Change password
                 </Button>
 
-                {!user?.isMfaActive && (
-                  <button
-                    onClick={() => navigate("mfa-setup")}
-                    style={{
-                      width: "100%",
-                      height: "38px",
-                      background: color.cta,
-                      border: "none",
-                      borderRadius: "999px",
-                      color: "#fff",
-                      fontSize: font.sizeMd,
-                      fontWeight: font.weightSemibold,
-                      cursor: "pointer",
-                      fontFamily: font.family,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px",
-                      transition: "background 0.15s",
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = color.ctaHover}
-                    onMouseLeave={(e) => e.currentTarget.style.background = color.cta}
-                  >
-                    <CheckCircle2 size={16} color={color.success} />
-                    Enable MFA
-                  </button>
-                )}
+                {!user?.isMfaActive && (<Button
+                  variant="primary"
+                  onClick={() => navigate("mfa-setup")}
+                >
+                  Enable MFA
+                </Button>)}
+
               </div>
             </div>
 
