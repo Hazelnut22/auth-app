@@ -17,25 +17,25 @@ This is a full-stack authentication prototype which uses cybersecurity principle
 
 ## Features
 
-### 1. Self-Built Canvas CAPTCHA: A custom text-based CAPTCHA system was built without using any third-party service.
+- 1. **Self-Built Canvas CAPTCHA**: A custom text-based CAPTCHA system was built without using any third-party service.
 
-### 2. Password Hashing: Using Argon2id, the winner of the Password Hashing Competition (2015), passwords are hased stored in the database. 
+- 2. **Password Hashing**: Using Argon2id, the winner of the Password Hashing Competition (2015), passwords are hased stored in the database. 
 
-### 3. Password Policy: Minimum 8 characters, Uppercase, Number, Special character, no repeating or consecutive characters, Password history, and Password expiration date is enforced.
+- 3. **Password Policy**: Minimum 8 characters, Uppercase, Number, Special character, no repeating or consecutive characters, Password history, and Password expiration date is enforced.
 
-### 4. Multi-Factor Authentication (MFA): Username and password, and TOTP (Time-based One-Time Password) or Email OTP code via Nodemailer
+- 4. **Multi-Factor Authentication (MFA)**: Username and password, and TOTP (Time-based One-Time Password) or Email OTP code via Nodemailer
 
-### 5. Email Verification on Registration: New accounts are not usable until email is verified.
+- 5. **Email Verification on Registration**: New accounts are not usable until email is verified.
 
-### 6. JWT Session: JSON Web Tokens stored in HttpOnly cookies and token purposes (`access`, `mfa_pending`, `password_reset`) guarded.
+- 6. **JWT Session**: JSON Web Tokens stored in HttpOnly cookies and token purposes (`access`, `mfa_pending`, `password_reset`) guarded.
 
-### 7. Middleware: Captcha, Helmet, IP Rate Limiting, and Account lockedout for 15 minutes after 5 failed login attempts
+- 7. **Middleware**: Captcha, Helmet, IP Rate Limiting, and Account lockedout for 15 minutes after 5 failed login attempts
 
-### 8. Activity Log: Every security events (REGISTER_SUCCESS, LOGIN_SUCCESS, LOGIN_FAILED, ACCOUNT_LOCKED, LOGOUT, MFA_ENABLED, MFA_DISABLED, PASSWORD_CHANGED, and PASSWORD_RESET) are recorded in database and displayed in the dashboard.
+- 8. **Activity Log**: Every security events (REGISTER_SUCCESS, LOGIN_SUCCESS, LOGIN_FAILED, ACCOUNT_LOCKED, LOGOUT, MFA_ENABLED, MFA_DISABLED, PASSWORD_CHANGED, and PASSWORD_RESET) are recorded in database and displayed in the dashboard.
 
-### 9. Password Reset: OTP sent to email, verify OTP, and set new password (new password cannot be one of last 5 used passwords).
+- 9. **Password Reset**: OTP sent to email, verify OTP, and set new password (new password cannot be one of last 5 used passwords).
 
-### 10. Input Validation and Sanitisation: Request bodies are validated with express-validator. 
+- 10. **Input Validation and Sanitisation**: Request bodies are validated with express-validator. 
 
 ## Installation
 
@@ -164,25 +164,6 @@ CHANGE PASSWORD
 ---
 
 ## Endpoints
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/app/auth/captcha` | None | Get CAPTCHA challenge |
-| POST | `/app/auth/register` | None | Register new account |
-| POST | `/app/auth/activate` | None | Verify activation OTP |
-| POST | `/app/auth/activate/resend` | None | Resend activation OTP |
-| POST | `/app/auth/login` | None | Login (Phase 1) |
-| GET | `/app/auth/status` | Session | Get user status + activity |
-| POST | `/app/auth/logout` | Session | Sign out |
-| POST | `/app/auth/2fa/setup` | Session | Generate MFA QR code |
-| POST | `/app/auth/2fa/verify` | MFA pending / Session | Verify TOTP code |
-| POST | `/app/auth/2fa/reset` | Session | Disable MFA |
-| POST | `/app/auth/2fa/email/send` | MFA pending | Send email OTP |
-| POST | `/app/auth/2fa/email/verify` | MFA pending | Verify email OTP |
-| POST | `/app/auth/password/forgot` | None | Send password reset OTP |
-| POST | `/app/auth/password/verify` | None | Verify reset OTP |
-| POST | `/app/auth/password/reset` | Reset cookie | Set new password |
-| POST | `/app/auth/password/change` | Session | Change password (authenticated) |
 
 ### REST API
 - Endpoint: /app/auth/captcha
